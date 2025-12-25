@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Backend pour PlanÉtude avec Gemini 2.5 Flash",
   "main": "dist/server.js",
+  "packageManager": "pnpm@10.26.2",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
