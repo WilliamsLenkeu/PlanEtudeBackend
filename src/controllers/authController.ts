@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.model';
+import RefreshTokenModel from '../models/RefreshToken.model';
+import crypto from 'crypto';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -32,6 +34,7 @@ export const register = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         token: generateToken(user.id),
+        refreshToken: await createRefreshToken(user.id),
       });
     } else {
       res.status(400).json({ message: 'Données utilisateur invalides' });
@@ -53,6 +56,7 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         token: generateToken(user.id),
+        refreshToken: await createRefreshToken(user.id),
       });
     } else {
       res.status(401).json({ message: 'Email ou mot de passe incorrect' });
@@ -112,6 +116,7 @@ export const googleLogin = async (req: Request, res: Response) => {
       email: user.email,
       avatar: user.avatar,
       token: generateToken(user.id),
+      refreshToken: await createRefreshToken(user.id),
     });
 
   } catch (error: any) {
@@ -124,4 +129,36 @@ const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
     expiresIn: '30d',
   });
+};
+
+async function createRefreshToken(userId: string) {
+  const token = crypto.randomBytes(40).toString('hex');
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  await RefreshTokenModel.create({ userId, token, expiresAt });
+  return token;
+}
+
+export const refreshToken = async (req: Request, res: Response) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ message: 'Token manquant' });
+
+  try {
+    const doc = await RefreshTokenModel.findOne({ token });
+    if (!doc) return res.status(401).json({ message: 'Refresh token invalide' });
+    if (doc.expiresAt < new Date()) {
+      await doc.deleteOne();
+      return res.status(401).json({ message: 'Refresh token expiré' });
+    }
+
+    const userId = doc.userId.toString();
+    const newAccess = generateToken(userId);
+    const newRefresh = await createRefreshToken(userId);
+
+    // remove old token
+    await doc.deleteOne();
+
+    res.json({ token: newAccess, refreshToken: newRefresh });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
 };

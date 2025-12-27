@@ -3,7 +3,9 @@ import {
   getPlannings, 
   createPlanning, 
   updatePlanning, 
-  deletePlanning 
+  deletePlanning,
+  exportIcal,
+  exportPdf,
 } from '../controllers/planningController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
@@ -17,5 +19,7 @@ router.get('/', getPlannings);
 router.post('/', validate(planningSchema), createPlanning);
 router.put('/:id', validate(planningSchema.partial()), updatePlanning);
 router.delete('/:id', deletePlanning);
+router.get('/:id/export.ical', exportIcal);
+router.get('/:id/export.pdf', exportPdf);
 
 export default router;

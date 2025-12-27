@@ -1,8 +1,8 @@
 **Nom du Produit :** PlanÉtude  
 **Version :** 2.0 (Intégration IA complète)  
 **Date :** 25 décembre 2025  
-**Description Générale :** PlanÉtude est une application web dédiée à aider les élèves et étudiants à planifier leurs sessions d'étude sur différentes périodes (quotidienne, hebdomadaire, mensuelle ou semestrielle). L'interface adopte un style pixelisé rétro et charmant, avec des interactions fluides, belles et amicales. Un assistant virtuel conversationnel ("PixelCoach") guide l'utilisateur comme une personne réelle pour construire et ajuster le planning, rendant l'expérience motivante et engageante. L'intégration de l'IA via l'API Gemini 2.5 Flash renforce les interactions en les rendant plus naturelles, intelligentes et personnalisées.  
-**Objectif Principal :** Fournir une tool personnalisée et ludique pour améliorer la productivité étudiante, réduire le stress et favoriser des habitudes d'étude durables.
+**Description Générale :** PlanÉtude est une application web dédiée à aider les élèves et étudiants à organiser leurs sessions d'étude de manière autonome. L'interface adopte un style moderne, épuré et intuitif, mettant l'accent sur la création manuelle et le contrôle total de l'utilisateur sur son emploi du temps. Un assistant virtuel conversationnel ("PixelCoach") agit comme un compagnon de soutien, offrant des conseils d'optimisation, des encouragements et une aide ponctuelle pour ajuster le planning selon les besoins de l'utilisateur. L'intégration de l'IA via l'API Gemini 2.5 Flash vient enrichir l'expérience sans jamais se substituer à l'initiative de l'élève.  
+**Objectif Principal :** Offrir un outil de planification puissant et autonome, soutenu par une assistance intelligente pour favoriser la discipline et la réussite académique.
 
 #### 1. Public Cible
 - Élèves du secondaire (12-18 ans) et étudiants universitaires (18-25 ans).  
@@ -10,22 +10,23 @@
 - Focus initial : Utilisateurs francophones (France, Belgique, Canada, Afrique francophone).
 
 #### 2. Objectifs du Produit
-- **Fonctionnels :** Création de plannings via chat IA, suivi des progrès, rappels et gamification.  
+- **Fonctionnels :** Gestion manuelle complète des plannings (ajout, modification, suppression), suivi des progrès, assistance IA pour l'optimisation, rappels et gamification.  
 - **Non Fonctionnels :** Fluidité (animations sans lag), sécurité (RGPD), scalabilité (jusqu'à 10 000 utilisateurs simultanés), performance rapide grâce à Gemini 2.5 Flash (modèle optimisé pour vitesse et coût).
 
 #### 3. Fonctionnalités Clés
 - **Inscription et Connexion :** Email, Google ou Apple. Données stockées dans MongoDB.
 
-- **Interface Conversationnelle (Powered by IA) :** 
-  - Chat avec PixelCoach utilisant Gemini 2.5 Flash pour réponses dynamiques et naturelles.
-  - Exemples : L'utilisateur dit "Je suis stressé avec les exams de maths et physique", l'IA répond amicalement et propose un planning équilibré avec pauses ("Pas de souci ! On va répartir ça sur la semaine avec des sessions courtes. Voilà une proposition : ...").
-  - Support multi-périodes : Jour, semaine, mois, semestre (avec jalons comme exams).
-  - Détection de sentiment et encouragements personnalisés.
+- **Gestion Autonome des Plannings (Cœur de l'application) :** 
+  - Création manuelle de sessions d'étude via une interface de calendrier intuitive.
+  - Édition fluide : Drag-and-drop, redimensionnement des sessions.
+  - Personnalisation complète des matières et des durées.
+  - Visualisation multi-périodes : Jour, semaine, mois.
 
-- **Gestion des Plannings :** 
-  - Visualisation en style pixel art (calendrier rétro avec icônes mignonnes).
-  - Édition fluide : Drag-and-drop, avec feedback IA ("Bonne idée d'ajouter une pause !").
-  - Suggestions IA : Basées sur données passées pour optimiser (ex. : allonger les révisions si faiblesse détectée).
+- **Assistant PixelCoach (Support Intelligent) :** 
+  - Chat d'assistance disponible pour répondre aux questions et proposer des ajustements.
+  - Suggestions d'optimisation basées sur le planning créé par l'utilisateur (ex: "Tu as beaucoup de maths lundi, veux-tu insérer une pause de 15 min ?").
+  - Détection de charge de travail et conseils bien-être.
+  - Aide à la répartition des tâches complexes sur demande explicite.
 
 - **Suivi et Analyse :** 
   - Timer intégré, marquage des sessions complétées.

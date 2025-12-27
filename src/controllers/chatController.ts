@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getGeminiResponse } from '../services/geminiService';
+import { getGeminiResponse, getGeminiMetrics } from '../services/geminiService';
 import User from '../models/User.model';
 import Planning from '../models/Planning.model';
 import Progress from '../models/Progress.model';
@@ -41,7 +41,7 @@ export const chat = async (req: AuthRequest, res: Response) => {
     const fullPrompt = `${userContext}\n\nUtilisateur: ${message}`;
 
     // 3. Obtenir la réponse de l'IA
-    const aiResponseText = await getGeminiResponse(fullPrompt, history);
+    const aiResponseText = await getGeminiResponse(message, history, { user, planning: currentPlanning });
 
     // 4. Sauvegarder l'interaction dans l'historique
     await ChatHistory.create([
@@ -85,5 +85,14 @@ export const chat = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ message: 'Erreur lors du traitement du chat' });
+  }
+};
+
+export const getMetrics = async (req: AuthRequest, res: Response) => {
+  try {
+    const metrics = getGeminiMetrics();
+    res.json(metrics);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
   }
 };
