@@ -1,21 +1,22 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.model';
 import RefreshTokenModel from '../models/RefreshToken.model';
 import crypto from 'crypto';
+import { AppError } from '../middleware/errorHandler';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password, gender } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      return res.status(400).json({ message: 'L\'utilisateur existe déjà' });
+      throw new AppError('L\'utilisateur existe déjà', 400);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -28,23 +29,19 @@ export const register = async (req: Request, res: Response) => {
       gender,
     });
 
-    if (user) {
-      res.status(201).json({
-        _id: user.id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user.id),
-        refreshToken: await createRefreshToken(user.id),
-      });
-    } else {
-      res.status(400).json({ message: 'Données utilisateur invalides' });
-    }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(201).json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user.id),
+      refreshToken: await createRefreshToken(user.id),
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   try {
@@ -59,10 +56,10 @@ export const login = async (req: Request, res: Response) => {
         refreshToken: await createRefreshToken(user.id),
       });
     } else {
-      res.status(401).json({ message: 'Email ou mot de passe incorrect' });
+      throw new AppError('Email ou mot de passe incorrect', 401);
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 

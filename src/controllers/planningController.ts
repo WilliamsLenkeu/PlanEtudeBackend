@@ -8,8 +8,30 @@ interface AuthRequest extends Request {
 
 export const getPlannings = async (req: AuthRequest, res: Response) => {
   try {
-    const plannings = await Planning.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(plannings);
+    const { page = 1, limit = 10, periode, sort = '-createdAt' } = req.query;
+    const query: any = { userId: req.user.id };
+
+    if (periode) {
+      query.periode = periode;
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const plannings = await Planning.find(query)
+      .sort(sort as string)
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Planning.countDocuments(query);
+
+    res.json({
+      plannings,
+      pagination: {
+        total,
+        page: Number(page),
+        pages: Math.ceil(total / Number(limit)),
+      },
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

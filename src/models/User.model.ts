@@ -11,6 +11,13 @@ export interface IUser extends Document {
     themes: string[];
     matieres: string[];
   };
+  gamification: {
+    xp: number;
+    level: number;
+    streak: number;
+    lastStudyDate?: Date;
+    totalStudyTime: number; // en minutes
+  };
   createdAt: Date;
 }
 
@@ -24,6 +31,13 @@ const UserSchema: Schema = new Schema({
   preferences: {
     themes: [String],
     matieres: [String],
+  },
+  gamification: {
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    streak: { type: Number, default: 0 },
+    lastStudyDate: { type: Date },
+    totalStudyTime: { type: Number, default: 0 },
   },
 }, { timestamps: true });
 

@@ -7,6 +7,7 @@ import chatRoutes from './routes/chat.routes';
 import planningRoutes from './routes/planning.routes';
 import progressRoutes from './routes/progress.routes';
 import userRoutes from './routes/user.routes';
+import statsRoutes from './routes/stats.routes';
 import reminderRoutes from './routes/reminder.routes';
 import badgeRoutes from './routes/badge.routes';
 import { notFound, errorHandler } from './middleware/errorHandler';
@@ -35,6 +36,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/planning', planningRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/badges', badgeRoutes);
 

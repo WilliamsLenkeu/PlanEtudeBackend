@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Progress from '../models/Progress.model';
+import { addExperience } from '../utils/gamification';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -25,7 +26,15 @@ export const createProgress = async (req: AuthRequest, res: Response) => {
       tempsEtudie,
       notes,
     });
-    res.status(201).json(progress);
+
+    // Ajouter de l'XP : 10 XP par session complétée + 1 XP par 10 minutes d'étude
+    const xpToGain = (sessionsCompletees * 10) + Math.floor(tempsEtudie / 10);
+    const newGamification = await addExperience(req.user.id, xpToGain, tempsEtudie);
+
+    res.status(201).json({
+      progress,
+      gamification: newGamification
+    });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }

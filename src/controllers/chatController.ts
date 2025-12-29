@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getGeminiResponse, getGeminiMetrics } from '../services/geminiService';
+import { getMistralResponse, getMistralMetrics } from '../services/mistralService';
 import User from '../models/User.model';
 import Planning from '../models/Planning.model';
 import Progress from '../models/Progress.model';
@@ -24,24 +24,24 @@ export const chat = async (req: AuthRequest, res: Response) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
-    // Formatter pour Gemini (ordre chronologique)
+    // Formatter pour Mistral (ordre chronologique)
     const history = historyData.reverse().map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }]
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: h.content
     }));
 
     // 2. Récupérer le contexte utilisateur
     const user = await User.findById(userId);
     const currentPlanning = await Planning.findOne({ userId }).sort({ createdAt: -1 });
     
-    const userGenderFull = user?.gender === 'M' ? 'un homme' : user?.gender === 'F' ? 'une femme' : 'non-binaire/autre';
-    const userContext = `L'utilisateur s'appelle ${user?.name}, c'est ${userGenderFull}. 
-    ${currentPlanning ? `Il/Elle a déjà un planning pour la période ${currentPlanning.periode}.` : `Il/Elle n'a pas encore de planning.`}`;
-
-    const fullPrompt = `${userContext}\n\nUtilisateur: ${message}`;
-
     // 3. Obtenir la réponse de l'IA
-    const aiResponseText = await getGeminiResponse(message, history, { user, planning: currentPlanning });
+    const aiResponseText = await getMistralResponse(message, history, { 
+      name: user?.name,
+      gender: user?.gender,
+      gamification: user?.gamification,
+      preferences: user?.preferences,
+      currentPlanning
+    });
 
     // 4. Sauvegarder l'interaction dans l'historique
     await ChatHistory.create([
@@ -90,7 +90,7 @@ export const chat = async (req: AuthRequest, res: Response) => {
 
 export const getMetrics = async (req: AuthRequest, res: Response) => {
   try {
-    const metrics = getGeminiMetrics();
+    const metrics = getMistralMetrics();
     res.json(metrics);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

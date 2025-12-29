@@ -7,7 +7,7 @@ dotenv.config();
 const requiredEnvVars = [
   'MONGODB_URI',
   'JWT_SECRET',
-  'GEMINI_API_KEY'
+  'MISTRAL_API_KEY'
 ];
 
 /**
@@ -29,6 +29,6 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   mongodbUri: process.env.MONGODB_URI as string,
   jwtSecret: process.env.JWT_SECRET as string,
-  geminiApiKey: process.env.GEMINI_API_KEY as string,
+  mistralApiKey: process.env.MISTRAL_API_KEY as string,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
 };
