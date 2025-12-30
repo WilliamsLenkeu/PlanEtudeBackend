@@ -43,3 +43,32 @@ export const planningSchema = z.object({
     })).min(1)
   }),
 });
+
+export const subjectSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, 'Le nom est requis'),
+    color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Format de couleur invalide (ex: #FF0000)').optional(),
+    icon: z.string().optional(),
+    difficulty: z.number().min(1).max(5).optional(),
+    goalHoursPerWeek: z.number().min(0).optional(),
+  }),
+});
+
+export const updateProfileSchema = z.object({
+  body: z.object({
+    name: z.string().min(2).optional(),
+    email: z.string().email().optional(),
+    gender: z.enum(['M', 'F', 'Autre']).optional(),
+    avatar: z.string().url().optional(),
+    preferences: z.object({
+      matieres: z.array(z.string()).optional()
+    }).optional()
+  })
+});
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    oldPassword: z.string().min(1, 'Ancien mot de passe requis'),
+    newPassword: z.string().min(6, 'Le nouveau mot de passe doit contenir au moins 6 caractères')
+  })
+});

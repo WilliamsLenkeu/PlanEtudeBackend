@@ -1,0 +1,85 @@
+import express from 'express';
+import { getThemes, unlockTheme, setCurrentTheme } from '../controllers/themeController';
+import { protect } from '../middleware/authMiddleware';
+
+const router = express.Router();
+
+router.use(protect);
+
+/**
+ * @swagger
+ * tags:
+ *   name: Themes
+ *   description: Boutique de thèmes pastel 🍭
+ */
+
+/**
+ * @swagger
+ * /themes:
+ *   get:
+ *     summary: Liste tous les thèmes disponibles avec config complète 🎀
+ *     tags: [Themes]
+ *     responses:
+ *       200:
+ *         description: Liste des thèmes et leurs configurations visuelles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Theme'
+ */
+router.get('/', getThemes);
+
+/**
+ * @swagger
+ * /themes/unlock/{key}:
+ *   post:
+ *     summary: Débloquer un thème avec de l'XP ✨
+ *     tags: [Themes]
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Thème débloqué
+ */
+router.post('/unlock/:key', unlockTheme);
+
+/**
+ * @swagger
+ * /themes/set/{key}:
+ *   put:
+ *     summary: Changer le thème actuel et récupérer sa config 🌸
+ *     tags: [Themes]
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Thème mis à jour avec les variables visuelles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     currentTheme: { type: string }
+ *                     themeConfig: { type: object }
+ */
+router.put('/set/:key', setCurrentTheme);
+
+export default router;

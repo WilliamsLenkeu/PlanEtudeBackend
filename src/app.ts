@@ -10,6 +10,11 @@ import userRoutes from './routes/user.routes';
 import statsRoutes from './routes/stats.routes';
 import reminderRoutes from './routes/reminder.routes';
 import badgeRoutes from './routes/badge.routes';
+import subjectRoutes from './routes/subject.routes';
+import themeRoutes from './routes/theme.routes';
+import lofiRoutes from './routes/lofi.routes';
+import { specs, swaggerCustomOptions } from './utils/swagger';
+import swaggerUi from 'swagger-ui-express';
 import { notFound, errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -21,6 +26,9 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerCustomOptions));
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -39,6 +47,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/badges', badgeRoutes);
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/themes', themeRoutes);
+app.use('/api/lofi', lofiRoutes);
 
 app.get('/', (req, res) => {
   res.send('API PlanÉtude is running...');

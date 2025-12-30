@@ -8,7 +8,8 @@ export interface IUser extends Document {
   name: string;
   gender: 'M' | 'F' | 'Autre';
   preferences: {
-    themes: string[];
+    currentTheme: string;
+    unlockedThemes: string[];
     matieres: string[];
   };
   gamification: {
@@ -29,7 +30,8 @@ const UserSchema: Schema = new Schema({
   name: { type: String, required: true },
   gender: { type: String, enum: ['M', 'F', 'Autre'], required: true },
   preferences: {
-    themes: [String],
+    currentTheme: { type: String, default: 'classic-pink' },
+    unlockedThemes: { type: [String], default: ['classic-pink'] },
     matieres: [String],
   },
   gamification: {
