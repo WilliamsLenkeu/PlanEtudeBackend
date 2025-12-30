@@ -7,6 +7,7 @@ export const addExperience = async (userId: string, xpAmount: number, studyMinut
   // Initialiser si gamification n'existe pas
   if (!user.gamification) {
     user.gamification = {
+      totalXP: 0,
       xp: 0,
       level: 1,
       streak: 0,
@@ -15,6 +16,7 @@ export const addExperience = async (userId: string, xpAmount: number, studyMinut
   }
 
   user.gamification.xp += xpAmount;
+  user.gamification.totalXP = (user.gamification.totalXP || 0) + xpAmount;
   user.gamification.totalStudyTime += studyMinutes;
 
   // Calcul du niveau (ex: 100 XP par niveau)
