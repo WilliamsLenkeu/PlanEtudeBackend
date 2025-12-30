@@ -13,10 +13,6 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:8000/api',
-        description: 'Serveur de développement',
-      },
-      {
         url: 'https://plan-etude.koyeb.app/api',
         description: 'Serveur de production',
       },
