@@ -40,7 +40,8 @@ router.use(protect);
  *   post:
  *     summary: Accorder un badge à l'utilisateur (Admin) 🎖️
  *     tags: [Badges]
- *     security:      - bearerAuth: []
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

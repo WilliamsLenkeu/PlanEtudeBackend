@@ -24,7 +24,14 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "'unsafe-inline'"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json());
 
