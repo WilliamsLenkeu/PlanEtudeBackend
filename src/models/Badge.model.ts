@@ -5,6 +5,7 @@ const BadgeSchema = new mongoose.Schema({
   key: { type: String, required: true },
   name: { type: String, required: true },
   description: { type: String },
+  iconKey: { type: String, default: 'Award' }, // Correspond à un nom d'icône Lucide React
   awardedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 

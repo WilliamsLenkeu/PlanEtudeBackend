@@ -1,5 +1,5 @@
 import express from 'express';
-import { getStats, getSubjectStats } from '../controllers/statsController';
+import { getStats, getSubjectStats, getRecommendations, getWeeklyReport, getHeatmapData } from '../controllers/statsController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -8,7 +8,7 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Stats
- *   description: Statistiques d'apprentissage 📊
+ *   description: Statistiques d'apprentissage et coaching intelligent 📊
  */
 
 /**
@@ -22,15 +22,6 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Statistiques récupérées avec succès 📈
- *         content:
- *           application/json:
- *             example:
- *               success: true
- *               data:
- *                 totalStudyTime: 1250
- *                 averageSessionDuration: 45
- *                 mostStudiedSubject: "Mathématiques 📐"
- *                 streakDays: 5
  */
 router.get('/', protect, getStats);
 
@@ -45,18 +36,58 @@ router.get('/', protect, getStats);
  *     responses:
  *       200:
  *         description: Répartition récupérée ✨
+ */
+router.get('/subjects', protect, getSubjectStats);
+
+/**
+ * @swagger
+ * /stats/recommendations:
+ *   get:
+ *     summary: Obtenir des conseils d'étude personnalisés par l'IA Coach 🤖
+ *     tags: [Stats]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conseils récupérés avec succès 🌸
  *         content:
  *           application/json:
  *             example:
  *               success: true
  *               data:
  *                 - subject: "Maths"
- *                   minutes: 450
- *                   color: "#FFB6C1"
- *                 - subject: "Français"
- *                   minutes: 300
- *                   color: "#B19CD9"
+ *                   progress: 15
+ *                   advice: "Tu as un peu délaissé les Maths cette semaine. Une petite session de 20 min ? 🌸"
+ *                   priority: "high"
  */
-router.get('/subjects', protect, getSubjectStats);
+router.get('/recommendations', protect, getRecommendations);
+
+/**
+ * @swagger
+ * /stats/weekly-report:
+ *   get:
+ *     summary: Générer un rapport de productivité hebdomadaire 📊
+ *     tags: [Stats]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Rapport généré ✨
+ */
+router.get('/weekly-report', protect, getWeeklyReport);
+
+/**
+ * @swagger
+ * /stats/heatmap:
+ *   get:
+ *     summary: Récupérer les données d'intensité d'étude pour le Heatmap 🔥
+ *     tags: [Stats]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Données heatmap récupérées 📈
+ */
+router.get('/heatmap', protect, getHeatmapData);
 
 export default router;

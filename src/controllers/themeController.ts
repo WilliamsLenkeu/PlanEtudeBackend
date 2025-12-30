@@ -59,7 +59,8 @@ export const unlockTheme = async (req: AuthRequest, res: Response) => {
     }
 
     user.gamification.xp -= theme.priceXP;
-    user.preferences.unlockedThemes.push(key);
+    // On stocke la clé du thème (ex: 'strawberry-milk')
+    user.preferences.unlockedThemes.push(theme.key);
     
     await user.save();
 

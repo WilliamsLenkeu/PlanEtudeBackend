@@ -1,10 +1,52 @@
 import { Request, Response } from 'express';
 import Planning from '../models/Planning.model';
 import PDFDocument from 'pdfkit';
+import { addExperience } from '../utils/gamification';
 
 interface AuthRequest extends Request {
   user?: any;
 }
+
+// @desc    Mettre à jour le statut d'une session (ex: passer à 'termine')
+// @route   PATCH /api/plannings/:id/sessions/:sessionId
+// @access  Private
+export const updateSessionStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id, sessionId } = req.params;
+    const { statut, notes } = req.body;
+
+    const planning = await Planning.findById(id);
+    if (!planning) return res.status(404).json({ success: false, message: 'Planning non trouvé' });
+    if (planning.userId.toString() !== req.user.id) return res.status(401).json({ success: false, message: 'Non autorisé' });
+
+    const session = (planning.sessions as any).id(sessionId);
+    if (!session) return res.status(404).json({ success: false, message: 'Session non trouvée' });
+
+    const oldStatus = session.statut;
+    session.statut = statut || session.statut;
+    if (notes) session.notes = notes;
+
+    await planning.save();
+
+    // Si la session vient d'être terminée, on ajoute de l'XP et de la maîtrise
+    if (oldStatus !== 'termine' && statut === 'termine') {
+      const durationMinutes = Math.floor((new Date(session.fin).getTime() - new Date(session.debut).getTime()) / (1000 * 60));
+      const xpToGain = Math.floor(durationMinutes / 2) + 10; // 10 XP base + 1 XP par 2 min
+
+      const gamification = await addExperience(req.user.id, xpToGain, durationMinutes, session.matiere);
+
+      return res.json({
+        success: true,
+        message: `Session terminée ! +${xpToGain} XP gagnés. ✨`,
+        data: { planning, gamification }
+      });
+    }
+
+    res.json({ success: true, data: planning });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const getPlannings = async (req: AuthRequest, res: Response) => {
   try {

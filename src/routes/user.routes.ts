@@ -33,8 +33,19 @@ router.use(protect);
  *               data:
  *                 name: "Sakura"
  *                 email: "sakura@love.com"
- *                 xp: 150
- *                 level: 2
+ *                 rank: "Nouvelle Étoile 🌟"
+ *                 gamification:
+ *                   totalXP: 1250
+ *                   xp: 50
+ *                   level: 12
+ *                   streak: 5
+ *                   dailyQuests:
+ *                     - title: "Concentration Intense 🧠"
+ *                       description: "Étudie pendant au moins 30 minutes au total aujourd'hui."
+ *                       xpReward: 50
+ *                       isCompleted: false
+ *                       target: 30
+ *                       current: 12
  *                 preferences: { matieres: ["Maths", "Art"] }
  *                 themeConfig:
  *                   primaryColor: "#FFB6C1"

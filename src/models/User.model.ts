@@ -19,6 +19,36 @@ export interface IUser extends Document {
     streak: number;
     lastStudyDate?: Date;
     totalStudyTime: number; // en minutes
+    notifications: Array<{
+      id: string;
+      type: 'badge' | 'quest' | 'level';
+      message: string;
+      read: boolean;
+      createdAt: Date;
+    }>;
+    companion: {
+      name: string;
+      type: string; // ex: "Chat", "Lapin", "Fée"
+      level: number;
+      evolutionStage: number; // 1, 2, 3
+      happiness: number; // 0-100
+      lastFed?: Date;
+    };
+    subjectMastery: Array<{
+      subjectName: string;
+      score: number; // 0-100
+      lastStudied: Date;
+    }>;
+    dailyQuests: Array<{
+      key: string;
+      title: string;
+      description: string;
+      xpReward: number;
+      isCompleted: boolean;
+      target: number;
+      current: number;
+    }>;
+    lastQuestReset?: Date;
   };
   createdAt: Date;
 }
@@ -42,6 +72,36 @@ const UserSchema: Schema = new Schema({
     streak: { type: Number, default: 0 },
     lastStudyDate: { type: Date },
     totalStudyTime: { type: Number, default: 0 },
+    notifications: [{
+      id: String,
+      type: { type: String, enum: ['badge', 'quest', 'level'] },
+      message: String,
+      read: { type: Boolean, default: false },
+      createdAt: { type: Date, default: Date.now }
+    }],
+    companion: {
+      name: { type: String, default: 'Yumi' },
+      type: { type: String, default: 'Chat' },
+      level: { type: Number, default: 1 },
+      evolutionStage: { type: Number, default: 1 },
+      happiness: { type: Number, default: 100 },
+      lastFed: { type: Date }
+    },
+    subjectMastery: [{
+      subjectName: String,
+      score: { type: Number, default: 0 },
+      lastStudied: { type: Date, default: Date.now }
+    }],
+    dailyQuests: [{
+      key: String,
+      title: String,
+      description: String,
+      xpReward: Number,
+      isCompleted: { type: Boolean, default: false },
+      target: { type: Number, default: 1 },
+      current: { type: Number, default: 0 }
+    }],
+    lastQuestReset: { type: Date, default: Date.now }
   },
 }, { timestamps: true });
 

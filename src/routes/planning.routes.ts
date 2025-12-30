@@ -6,6 +6,7 @@ import {
   deletePlanning,
   exportIcal,
   exportPdf,
+  updateSessionStatus,
 } from '../controllers/planningController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
@@ -123,6 +124,38 @@ router.route('/')
 router.route('/:id')
   .put(validate(planningSchema.partial()), updatePlanning)
   .delete(deletePlanning);
+
+/**
+ * @swagger
+ * /planning/{id}/sessions/{sessionId}:
+ *   patch:
+ *     summary: Mettre à jour le statut d'une session spécifique (ex: terminer) ✨
+ *     tags: [Planning]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID du planning
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         description: ID de la session
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               statut: { type: string, enum: [planifie, en_cours, termine, rate], example: "termine" }
+ *               notes: { type: string, example: "Session très productive !" }
+ *     responses:
+ *       200:
+ *         description: Statut mis à jour et XP gagnés 🎁
+ */
+router.patch('/:id/sessions/:sessionId', updateSessionStatus);
 
 /**
  * @swagger
