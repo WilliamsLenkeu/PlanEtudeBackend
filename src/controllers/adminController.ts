@@ -16,24 +16,43 @@ export const renderDashboard = (req: Request, res: Response) => {
         <title>PlanÉtude | Admin Dashboard</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            * { font-family: 'Plus Jakarta Sans', sans-serif; }
+            body { background-color: #f8fafc; color: #1e293b; margin: 0; }
+            .soft-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.04), 0 4px 10px -5px rgba(0,0,0,0.02); }
+            .sidebar-link.active { background-color: #f1f5f9; color: #6366f1; }
+            .action-card:hover { transform: translateY(-2px); transition: all 0.2s; }
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        </style>
         <script>
             tailwind.config = {
                 theme: {
                     extend: {
                         fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
                         colors: {
-                            soft: { bg: '#f8fafc', card: '#ffffff', accent: '#6366f1', text: '#1e293b', muted: '#64748b' }
+                            indigo: {
+                                50: '#f5f7ff',
+                                100: '#ebf0fe',
+                                200: '#ced9fd',
+                                600: '#6366f1',
+                                700: '#4f46e5',
+                            },
+                            slate: {
+                                50: '#f8fafc',
+                                100: '#f1f5f9',
+                                300: '#cbd5e1',
+                                400: '#94a3b8',
+                                500: '#64748b',
+                                600: '#475569',
+                                800: '#1e293b',
+                                900: '#0f172a',
+                            }
                         }
                     }
                 }
             }
         </script>
-        <style>
-            body { background-color: #f8fafc; color: #1e293b; }
-            .soft-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.04), 0 4px 10px -5px rgba(0,0,0,0.02); }
-            .sidebar-link.active { background-color: #f1f5f9; color: #6366f1; }
-            .action-card:hover { transform: translateY(-2px); transition: all 0.2s; }
-        </style>
     </head>
     <body class="min-h-screen flex">
         <!-- Sidebar -->
