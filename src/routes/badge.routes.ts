@@ -16,18 +16,31 @@ router.use(protect);
  * @swagger
  * /badges:
  *   get:
- *     summary: Liste tous les badges disponibles et obtenus 🎖️
+ *     summary: Liste tous les badges disponibles et leur statut ✨
  *     tags: [Badges]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des badges
+ *         description: Liste des badges récupérée 🏆
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - key: "early-bird"
+ *                   name: "Lève-tôt 🌅"
+ *                   description: "A étudié avant 8h du matin."
+ *                   isUnlocked: true
+ *                   unlockedAt: "2023-12-30T07:30:00Z"
+ *                 - key: "study-streak-5"
+ *                   name: "Régularité 📚"
+ *                   description: "5 jours de révisions consécutifs."
+ *                   isUnlocked: false
  *   post:
  *     summary: Accorder un badge à l'utilisateur (Admin) 🎖️
  *     tags: [Badges]
- *     security:
- *       - bearerAuth: []
+ *     security:      - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -41,7 +54,7 @@ router.use(protect);
  *       200:
  *         description: Badge accordé
  */
-router.get('/', getBadges);
+router.get('/', protect, getBadges);
 router.post('/', awardBadge);
 
 export default router;

@@ -32,9 +32,21 @@ const router = express.Router();
  *               gender: { type: string, enum: [M, F, O], example: F }
  *     responses:
  *       201:
- *         description: Utilisateur créé avec succès
+ *         description: Utilisateur créé avec succès ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Compte créé avec succès ! Bienvenue 🌸"
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5..."
+ *               user: { id: "658af...", name: "Sakura", email: "sakura@love.com" }
  *       400:
- *         description: Données invalides
+ *         description: Données invalides ou email déjà utilisé ❌
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: "Cet email est déjà utilisé par une autre princesse. 🎀"
  */
 router.post('/register', validate(registerSchema), register);
 
@@ -56,11 +68,23 @@ router.post('/register', validate(registerSchema), register);
  *               password: { type: string, example: secret123 }
  *     responses:
  *       200:
- *         description: Connexion réussie
+ *         description: Connexion réussie 💖
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5..."
+ *               user: { id: "658af...", name: "Sakura", xp: 150, level: 2 }
  *       401:
- *         description: Identifiants incorrects
+ *         description: Identifiants incorrects 🔑
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: "Oups ! Mot de passe ou email incorrect. 🍬"
  */
 router.post('/login', validate(loginSchema), login);
+
 /**
  * @swagger
  * /auth/refresh:
@@ -70,6 +94,11 @@ router.post('/login', validate(loginSchema), login);
  *     responses:
  *       200:
  *         description: Nouveau token généré
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               accessToken: "eyJhbGciOiJIUzI1Ni..."
  */
 router.post('/refresh', refreshToken);
 
@@ -82,6 +111,11 @@ router.post('/refresh', refreshToken);
  *     responses:
  *       200:
  *         description: Connexion réussie via Google
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               token: "eyJhbGciOiJIUzI1Ni..."
  */
 router.post('/google', googleLogin);
 

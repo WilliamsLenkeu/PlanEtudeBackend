@@ -72,3 +72,13 @@ export const changePasswordSchema = z.object({
     newPassword: z.string().min(6, 'Le nouveau mot de passe doit contenir au moins 6 caractères')
   })
 });
+
+export const reminderSchema = z.object({
+  body: z.object({
+    title: z.string().min(1, 'Le titre est requis'),
+    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: "Format de date invalide",
+    }),
+    planningId: z.string().optional(),
+  }),
+});

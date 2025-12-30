@@ -24,15 +24,24 @@ router.use(protect);
  * @swagger
  * /subjects:
  *   get:
- *     summary: Récupérer toutes tes matières 📚
+ *     summary: Liste toutes les matières de l'utilisateur 📚
  *     tags: [Subjects]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des matières
+ *         description: Liste des matières récupérée 🍭
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: "658bc..."
+ *                   name: "Mathématiques 📐"
+ *                   color: "#FFB6C1"
+ *                   totalStudyTime: 450
  *   post:
- *     summary: Créer une nouvelle matière 🎀
+ *     summary: Ajouter une nouvelle matière 🎨
  *     tags: [Subjects]
  *     security:
  *       - bearerAuth: []
@@ -44,19 +53,44 @@ router.use(protect);
  *             type: object
  *             required: [name]
  *             properties:
- *               name: { type: string, example: "Maths de l'Espace 🚀" }
- *               color: { type: string, example: "#FF69B4" }
- *               icon: { type: string, example: "calculator" }
- *               difficulty: { type: number, minimum: 1, maximum: 5, example: 4 }
- *               goalHoursPerWeek: { type: number, example: 5 }
+ *               name: { type: string, example: "Histoire 🏰" }
+ *               color: { type: string, example: "#B19CD9" }
  *     responses:
  *       201:
- *         description: Matière créée
+ *         description: Matière créée avec succès ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Nouvelle matière ajoutée ! ✨"
+ *               data: { id: "658bd...", name: "Histoire 🏰" }
  */
 router.route('/')
   .get(getSubjects)
   .post(validate(subjectSchema), createSubject);
 
+/**
+ * @swagger
+ * /subjects/{id}:
+ *   put:
+ *     summary: Modifier une matière 📝
+ *     tags: [Subjects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         example: "658bc..."
+ *     responses:
+ *       200:
+ *         description: Matière mise à jour 🍬
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Matière mise à jour ! ✨"
+ */
 router.route('/:id')
   .put(validate(subjectSchema.partial()), updateSubject)
   .delete(deleteSubject);

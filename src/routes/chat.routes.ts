@@ -32,7 +32,13 @@ const router = express.Router();
  *               message: { type: string, example: "Peux-tu m'aider à comprendre la photosynthèse ? 🌿" }
  *     responses:
  *       200:
- *         description: Réponse de l'IA
+ *         description: Réponse de l'IA reçue ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               response: "Bien sûr ! La photosynthèse est le processus par lequel les plantes transforment la lumière du soleil en énergie... 🌿🌸"
+ *               history: [{ role: "user", content: "..." }, { role: "assistant", content: "..." }]
  */
 router.post('/', protect, validate(chatSchema), chat);
 
@@ -46,7 +52,14 @@ router.post('/', protect, validate(chatSchema), chat);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Métriques récupérées
+ *         description: Métriques récupérées avec succès 📈
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 totalMessages: 42
+ *                 lastInteraction: "2023-12-30T10:30:00Z"
  */
 router.get('/metrics', protect, getMetrics);
 

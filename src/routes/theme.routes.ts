@@ -23,24 +23,22 @@ router.use(protect);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des thèmes et leurs configurations visuelles
+ *         description: Liste des thèmes et leurs configurations visuelles 🎨
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: true }
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       key: { type: string }
- *                       name: { type: string }
- *                       description: { type: string }
- *                       priceXP: { type: number }
- *                       isPremium: { type: boolean }
- *                       config: { type: object }
+ *             example:
+ *               success: true
+ *               data:
+ *                 - key: "strawberry-milk"
+ *                   name: "Lait Fraise 🍓"
+ *                   priceXP: 500
+ *                   config:
+ *                     primaryColor: "#FF8DA1"
+ *                     backgroundColor: "#FFF5F6"
+ *                     fontFamily: "'Fredoka', sans-serif"
+ *                 - key: "lavender-dream"
+ *                   name: "Rêve de Lavande 💜"
+ *                   priceXP: 1000
  */
 router.get('/', getThemes);
 
@@ -58,11 +56,22 @@ router.get('/', getThemes);
  *         required: true
  *         schema:
  *           type: string
+ *         example: "strawberry-milk"
  *     responses:
  *       200:
- *         description: Thème débloqué
+ *         description: Thème débloqué avec succès 🎉
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Thème Lait Fraise 🍓 débloqué ! Profites-en bien. ✨"
  *       400:
- *         description: XP insuffisante ou thème déjà débloqué
+ *         description: XP insuffisante ou thème déjà débloqué ❌
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: "Tu n'as pas assez d'XP pour ce thème. Continue d'étudier ! 💪"
  */
 router.post('/unlock/:key', unlockTheme);
 
@@ -80,21 +89,21 @@ router.post('/unlock/:key', unlockTheme);
  *         required: true
  *         schema:
  *           type: string
+ *         example: "lavender-dream"
  *     responses:
  *       200:
- *         description: Thème mis à jour avec les variables visuelles
+ *         description: Thème mis à jour avec les variables visuelles 🍭
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string }
- *                 data:
- *                   type: object
- *                   properties:
- *                     currentTheme: { type: string }
- *                     themeConfig: { type: object }
+ *             example:
+ *               success: true
+ *               message: "Thème mis à jour ! 🌸"
+ *               data:
+ *                 currentTheme: "lavender-dream"
+ *                 themeConfig:
+ *                   primaryColor: "#B19CD9"
+ *                   secondaryColor: "#E6E6FA"
+ *                   fontFamily: "'Nunito', sans-serif"
  */
 router.put('/set/:key', setCurrentTheme);
 

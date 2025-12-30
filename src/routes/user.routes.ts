@@ -25,21 +25,21 @@ router.use(protect);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Profil récupéré avec succès
+ *         description: Profil récupéré avec succès 🌸
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: true }
- *                 data:
- *                   type: object
- *                   properties:
- *                     name: { type: string }
- *                     email: { type: string }
- *                     xp: { type: number }
- *                     level: { type: number }
- *                     themeConfig: { type: object }
+ *             example:
+ *               success: true
+ *               data:
+ *                 name: "Sakura"
+ *                 email: "sakura@love.com"
+ *                 xp: 150
+ *                 level: 2
+ *                 preferences: { matieres: ["Maths", "Art"] }
+ *                 themeConfig:
+ *                   primaryColor: "#FFB6C1"
+ *                   secondaryColor: "#FFD1DC"
+ *                   fontFamily: "'Quicksand', sans-serif"
  *   put:
  *     summary: Mettre à jour les informations du profil 📝
  *     tags: [Users]
@@ -52,16 +52,22 @@ router.use(protect);
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
- *               gender: { type: string, enum: [M, F, O] }
- *               avatar: { type: string }
+ *               name: { type: string, example: "Sakura Pink" }
+ *               gender: { type: string, enum: [M, F, O], example: F }
+ *               avatar: { type: string, example: "https://api.dicebear.com/7.x/adventurer/svg?seed=Sakura" }
  *               preferences:
  *                 type: object
  *                 properties:
- *                   matieres: { type: array, items: { type: string } }
+ *                   matieres: { type: array, items: { type: string }, example: ["Maths", "Design"] }
  *     responses:
  *       200:
- *         description: Profil mis à jour
+ *         description: Profil mis à jour ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Profil mis à jour avec succès ! ✨"
+ *               data: { name: "Sakura Pink", gender: "F" }
  */
 router.route('/profile')
   .get(getUserProfile)
@@ -83,11 +89,23 @@ router.route('/profile')
  *             type: object
  *             required: [oldPassword, newPassword]
  *             properties:
- *               oldPassword: { type: string }
- *               newPassword: { type: string }
+ *               oldPassword: { type: string, example: "ancienMDP123" }
+ *               newPassword: { type: string, example: "nouveauMDP456" }
  *     responses:
  *       200:
- *         description: Mot de passe modifié avec succès
+ *         description: Mot de passe modifié avec succès 🍬
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Mot de passe modifié avec succès ! 🍭"
+ *       400:
+ *         description: Ancien mot de passe incorrect ❌
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: "L'ancien mot de passe est incorrect. 🍯"
  */
 router.put('/change-password', validate(changePasswordSchema), changePassword);
 

@@ -1,6 +1,8 @@
 import express from 'express';
-import { createReminder, listReminders, deleteReminder } from '../controllers/reminderController';
+import { createReminder, listReminders, deleteReminder, updateReminder } from '../controllers/reminderController';
 import { protect } from '../middleware/authMiddleware';
+import { validate } from '../middleware/validateMiddleware';
+import { reminderSchema } from '../utils/validation';
 
 const router = express.Router();
 
@@ -16,15 +18,24 @@ router.use(protect);
  * @swagger
  * /reminders:
  *   get:
- *     summary: Lister tous mes rappels 📜
+ *     summary: Récupérer tous les rappels 🔔
  *     tags: [Reminders]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des rappels
+ *         description: Liste des rappels récupérée 🍭
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: "658af..."
+ *                   title: "Révision Géo 🌍"
+ *                   time: "2023-12-30T18:00:00Z"
+ *                   isCompleted: false
  *   post:
- *     summary: Créer un nouveau rappel 🎀
+ *     summary: Créer un nouveau rappel ✨
  *     tags: [Reminders]
  *     security:
  *       - bearerAuth: []
@@ -34,22 +45,28 @@ router.use(protect);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [title, scheduledAt]
+ *             required: [title, time]
  *             properties:
- *               title: { type: string, example: "Réviser la géo ! 🌍" }
- *               scheduledAt: { type: string, format: date-time }
+ *               title: { type: string, example: "Faire les devoirs de Maths 📐" }
+ *               time: { type: string, format: date-time, example: "2023-12-30T17:00:00Z" }
  *     responses:
  *       201:
- *         description: Rappel créé
+ *         description: Rappel créé avec succès 🍬
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Rappel ajouté ! Je te préviendrai. 🔔"
  */
-router.get('/', listReminders);
-router.post('/', createReminder);
+router.route('/')
+  .get(listReminders)
+  .post(validate(reminderSchema), createReminder);
 
 /**
  * @swagger
  * /reminders/{id}:
- *   delete:
- *     summary: Supprimer un rappel 🗑️
+ *   put:
+ *     summary: Modifier ou marquer un rappel comme complété ✅
  *     tags: [Reminders]
  *     security:
  *       - bearerAuth: []
@@ -57,10 +74,18 @@ router.post('/', createReminder);
  *       - in: path
  *         name: id
  *         required: true
+ *         example: "658af..."
  *     responses:
  *       200:
- *         description: Rappel supprimé
+ *         description: Rappel mis à jour 🍭
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Rappel mis à jour ! ✨"
  */
-router.delete('/:id', deleteReminder);
+router.route('/:id')
+  .put(validate(reminderSchema.partial()), updateReminder)
+  .delete(deleteReminder);
 
 export default router;

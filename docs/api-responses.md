@@ -209,12 +209,140 @@ Ajoute une nouvelle piste personnalisée à la bibliothèque (Admin).
 
 ---
 
-## 📅 4. Plannings (`/planning`)
-... (Voir Swagger pour les détails complets `/api-docs`)
+## 📅 3. Plannings et Sessions (`/planning`)
+
+Organise tes sessions d'étude avec l'aide de l'IA ! 🤖
+
+### Liste des Plannings (`GET /planning`)
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "658af...",
+      "title": "Semaine d'Examens 📚",
+      "sessions": [
+        {
+          "subjectId": "658bc...",
+          "startTime": "2023-12-30T09:00:00Z",
+          "endTime": "2023-12-30T11:00:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Créer un Planning (`POST /planning`)
+**Request Body :**
+```json
+{
+  "title": "Ma semaine de révisions 📚",
+  "sessions": [
+    {
+      "subjectId": "658bc...",
+      "startTime": "2023-12-30T14:00:00Z",
+      "endTime": "2023-12-30T16:00:00Z"
+    }
+  ]
+}
+```
 
 ---
 
-## 🚨 5. Gestion des Erreurs
+## 📈 4. Progression et Stats (`/progress`, `/stats`)
+
+Suis tes efforts et gagne des récompenses ! 🏆
+
+### Enregistrer une Session (`POST /progress`)
+**Réponse (201 Created) :**
+```json
+{
+  "success": true,
+  "message": "Bravo ! Tu as gagné 15 XP. ✨",
+  "data": {
+    "xpGained": 15,
+    "newTotalXP": 165
+  }
+}
+```
+
+### Statistiques Globales (`GET /stats`)
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "data": {
+    "totalStudyTime": 1250,
+    "averageSessionDuration": 45,
+    "mostStudiedSubject": "Mathématiques 📐",
+    "streakDays": 5
+  }
+}
+```
+
+---
+
+## 🤖 5. Assistant IA (`/chat`)
+
+Pose tes questions à ton assistant personnel ! ✨
+
+### Discuter avec l'IA (`POST /chat`)
+**Request Body :**
+```json
+{
+  "message": "Peux-tu m'aider à comprendre la photosynthèse ? 🌿"
+}
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "response": "Bien sûr ! La photosynthèse est le processus par lequel les plantes transforment la lumière du soleil en énergie... 🌿🌸",
+  "history": [
+    { "role": "user", "content": "..." },
+    { "role": "assistant", "content": "..." }
+  ]
+}
+```
+
+---
+
+## 🔔 6. Rappels et Badges (`/reminders`, `/badges`)
+
+Ne rate rien et collectionne les badges ! 🎖️
+
+### Créer un Rappel (`POST /reminders`)
+**Request Body :**
+```json
+{
+  "title": "Faire les devoirs de Maths 📐",
+  "time": "2023-12-30T17:00:00Z"
+}
+```
+
+### Liste des Badges (`GET /badges`)
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "key": "early-bird",
+      "name": "Lève-tôt 🌅",
+      "description": "A étudié avant 8h du matin.",
+      "isUnlocked": true,
+      "unlockedAt": "2023-12-30T07:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## 🚨 7. Gestion des Erreurs
 Toutes les erreurs suivent ce format :
 ```json
 {

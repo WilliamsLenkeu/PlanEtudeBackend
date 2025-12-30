@@ -23,24 +23,23 @@ router.use(protect);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des pistes récupérées avec succès
+ *         description: Liste des pistes récupérées avec succès 🎵
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean, example: true }
- *                 count: { type: number, example: 30 }
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       title: { type: string, example: "Matin Calme 🌸" }
- *                       artist: { type: string, example: "Jamendo Artist" }
- *                       url: { type: string, example: "https://..." }
- *                       thumbnail: { type: string, example: "https://..." }
- *                       category: { type: string, example: "relax" }
+ *             example:
+ *               success: true
+ *               count: 2
+ *               data:
+ *                 - title: "Matin Calme 🌸"
+ *                   artist: "Lofi Girl"
+ *                   url: "https://api.jamendo.com/v3.0/tracks/..."
+ *                   thumbnail: "https://images.unsplash.com/..."
+ *                   category: "relax"
+ *                 - title: "Focus & Study 📚"
+ *                   artist: "Chill Hop"
+ *                   url: "https://api.jamendo.com/..."
+ *                   thumbnail: "https://images.unsplash.com/..."
+ *                   category: "focus"
  */
 router.get('/', getLofiTracks);
 
@@ -59,14 +58,19 @@ router.get('/', getLofiTracks);
  *           schema:
  *             type: object
  *             properties:
- *               title: { type: string }
- *               artist: { type: string }
- *               url: { type: string }
- *               thumbnail: { type: string }
- *               category: { type: string }
+ *               title: { type: string, example: "Nuit Étoilée 🌙" }
+ *               artist: { type: string, example: "Lofi Princess" }
+ *               url: { type: string, example: "https://youtube.com/..." }
+ *               thumbnail: { type: string, example: "https://img.youtube.com/..." }
+ *               category: { type: string, example: "relax" }
  *     responses:
  *       201:
- *         description: Piste ajoutée
+ *         description: Piste ajoutée avec succès ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Nouvelle piste ajoutée à la collection ! 🎵"
  */
 router.post('/', addLofiTrack);
 

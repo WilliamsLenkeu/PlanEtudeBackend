@@ -32,7 +32,18 @@ router.use(protect); // Toutes les routes planning sont protégées
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des plannings
+ *         description: Liste des plannings récupérée ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: "658af..."
+ *                   title: "Semaine d'Examens 📚"
+ *                   sessions:
+ *                     - subjectId: "658bc..."
+ *                       startTime: "2023-12-30T09:00:00Z"
+ *                       endTime: "2023-12-30T11:00:00Z"
  *   post:
  *     summary: Créer ou générer un nouveau planning 🤖
  *     tags: [Planning]
@@ -52,12 +63,18 @@ router.use(protect); // Toutes les routes planning sont protégées
  *                 items:
  *                   type: object
  *                   properties:
- *                     subjectId: { type: string }
- *                     startTime: { type: string, format: date-time }
- *                     endTime: { type: string, format: date-time }
+ *                     subjectId: { type: string, example: "658bc..." }
+ *                     startTime: { type: string, format: date-time, example: "2023-12-30T14:00:00Z" }
+ *                     endTime: { type: string, format: date-time, example: "2023-12-30T16:00:00Z" }
  *     responses:
  *       201:
- *         description: Planning créé
+ *         description: Planning créé avec succès ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Planning généré et enregistré ! 🤖"
+ *               data: { id: "658af...", title: "Ma semaine de révisions 📚" }
  */
 router.route('/')
   .get(getPlannings)
@@ -75,9 +92,15 @@ router.route('/')
  *       - in: path
  *         name: id
  *         required: true
+ *         example: "658af..."
  *     responses:
  *       200:
- *         description: Planning mis à jour
+ *         description: Planning mis à jour avec succès 🍭
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Planning mis à jour ! ✨"
  *   delete:
  *     summary: Supprimer un planning 🗑️
  *     tags: [Planning]
@@ -87,9 +110,15 @@ router.route('/')
  *       - in: path
  *         name: id
  *         required: true
+ *         example: "658af..."
  *     responses:
  *       200:
- *         description: Planning supprimé
+ *         description: Planning supprimé 🍬
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Planning supprimé définitivement. 🗑️"
  */
 router.route('/:id')
   .put(validate(planningSchema.partial()), updatePlanning)

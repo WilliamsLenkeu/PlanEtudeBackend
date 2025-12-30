@@ -33,3 +33,18 @@ export const deleteReminder = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateReminder = async (req: AuthRequest, res: Response) => {
+  try {
+    const { title, date, notified } = req.body;
+    const reminder = await Reminder.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      { title, date, notified },
+      { new: true }
+    );
+    if (!reminder) return res.status(404).json({ message: 'Rappel non trouvé' });
+    res.json(reminder);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -13,6 +13,7 @@ export interface IUser extends Document {
     matieres: string[];
   };
   gamification: {
+    totalXP: number;
     xp: number;
     level: number;
     streak: number;
@@ -35,6 +36,7 @@ const UserSchema: Schema = new Schema({
     matieres: [String],
   },
   gamification: {
+    totalXP: { type: Number, default: 0 },
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     streak: { type: Number, default: 0 },

@@ -23,7 +23,16 @@ const router = express.Router();
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Historique récupéré
+ *         description: Historique récupéré avec succès ✨
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - subjectId: "658bc..."
+ *                   durationMinutes: 45
+ *                   xpGained: 15
+ *                   date: "2023-12-30T10:00:00Z"
  *   post:
  *     summary: Enregistrer une nouvelle session d'étude ✨
  *     tags: [Progress]
@@ -37,12 +46,18 @@ const router = express.Router();
  *             type: object
  *             required: [subjectId, durationMinutes]
  *             properties:
- *               subjectId: { type: string }
+ *               subjectId: { type: string, example: "658bc..." }
  *               durationMinutes: { type: number, example: 45 }
- *               notes: { type: string }
+ *               notes: { type: string, example: "Révision des équations. ✏️" }
  *     responses:
  *       201:
- *         description: Session enregistrée et XP accordée
+ *         description: Session enregistrée et XP accordée 🎉
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Bravo ! Tu as gagné 15 XP. ✨"
+ *               data: { xpGained: 15, newTotalXP: 165 }
  */
 router.route('/')
   .get(protect, getProgress)
@@ -58,7 +73,16 @@ router.route('/')
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Résumé récupéré
+ *         description: Résumé récupéré avec succès 🍭
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 totalXP: 165
+ *                 level: 2
+ *                 xpToNextLevel: 35
+ *                 rank: "Apprentie studieuse 🎀"
  */
 router.get('/summary', getProgressSummary);
 
