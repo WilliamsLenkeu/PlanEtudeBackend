@@ -13,6 +13,7 @@ import badgeRoutes from './routes/badge.routes';
 import subjectRoutes from './routes/subject.routes';
 import themeRoutes from './routes/theme.routes';
 import lofiRoutes from './routes/lofi.routes';
+import adminRoutes from './routes/admin.routes';
 import { specs, swaggerCustomOptions } from './utils/swagger';
 import swaggerUi from 'swagger-ui-express';
 import { notFound, errorHandler } from './middleware/errorHandler';
@@ -56,6 +57,7 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/themes', themeRoutes);
 app.use('/api/lofi', lofiRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('API PlanÉtude is running...');

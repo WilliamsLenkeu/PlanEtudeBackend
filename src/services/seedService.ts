@@ -1,14 +1,9 @@
-import Theme from './src/models/Theme.model';
-import LofiTrack from './src/models/LofiTrack.model';
-import Subject from './src/models/Subject.model';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import { fetchLofiTracksFromJamendo } from './src/services/lofiService';
+import Theme from '../models/Theme.model';
+import LofiTrack from '../models/LofiTrack.model';
+import Subject from '../models/Subject.model';
+import { fetchLofiTracksFromJamendo } from './lofiService';
 
-dotenv.config();
-
-const themes = [
-  // ... (themes existants conservés)
+export const themes = [
   {
     key: 'classic-pink',
     name: 'Rose Classique 🌸',
@@ -113,8 +108,7 @@ const themes = [
   }
 ];
 
-const subjects = [
-  // Tronc Commun
+export const subjects = [
   { name: 'Mathématiques 📐', color: '#FFB6C1', difficulty: 4 },
   { name: 'Français ✍️', color: '#FFD1DC', difficulty: 3 },
   { name: 'Histoire-Géographie 🌍', color: '#B19CD9', difficulty: 3 },
@@ -123,8 +117,6 @@ const subjects = [
   { name: 'Langues Vivantes (LVA/LVB) 🗣️', color: '#AAF0D1', difficulty: 3 },
   { name: 'EPS 🏃‍♀️', color: '#FF8DA1', difficulty: 2 },
   { name: 'EMC ⚖️', color: '#E6E6FA', difficulty: 2 },
-
-  // Spécialités
   { name: 'Spé : Mathématiques 🧮', color: '#F20089', difficulty: 5 },
   { name: 'Spé : Physique-Chimie ⚗️', color: '#3EB489', difficulty: 5 },
   { name: 'Spé : SVT 🌿', color: '#98FF98', difficulty: 4 },
@@ -137,36 +129,21 @@ const subjects = [
   { name: 'Spé : SI ⚙️', color: '#1A4333', difficulty: 4 }
 ];
 
-const seed = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI!);
-    console.log('Connecté à MongoDB pour le seeding...');
-
-    // 1. Thèmes
-    await Theme.deleteMany({});
-    await Theme.insertMany(themes);
-    console.log('Thèmes ajoutés ! ✅');
-
-    // 2. Matières par défaut (pour le système, sans userId)
-    // Note: Pour que les matières soient accessibles à tous, on peut les créer sans userId 
-    // ou les copier lors de la création d'un compte. Ici on les injecte comme "matières globales".
-    await Subject.deleteMany({ userId: { $exists: false } }); 
-    await Subject.insertMany(subjects);
-    console.log('Matières (1ère/Terminale) ajoutées ! ✅');
-
-    // 3. Pistes Lo-Fi
-    const realTracks = await fetchLofiTracksFromJamendo(30);
-    if (realTracks.length > 0) {
-      await LofiTrack.deleteMany({});
-      await LofiTrack.insertMany(realTracks);
-      console.log(`${realTracks.length} pistes Lo-Fi réelles ajoutées depuis Jamendo ! ✅`);
-    }
-
-    mongoose.connection.close();
-    console.log('Seeding terminé avec succès ! ✨🌸');
-  } catch (error) {
-    console.error('Erreur lors du seeding :', error);
-  }
+export const seedThemes = async () => {
+  await Theme.deleteMany({});
+  return await Theme.insertMany(themes);
 };
 
-seed();
+export const seedSubjects = async () => {
+  await Subject.deleteMany({ userId: { $exists: false } });
+  return await Subject.insertMany(subjects);
+};
+
+export const seedLofi = async () => {
+  const realTracks = await fetchLofiTracksFromJamendo(30);
+  if (realTracks.length > 0) {
+    await LofiTrack.deleteMany({});
+    return await LofiTrack.insertMany(realTracks);
+  }
+  return [];
+};
