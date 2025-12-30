@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ISubject extends Document {
-  userId: mongoose.Types.ObjectId;
+  userId?: mongoose.Types.ObjectId;
   name: string;
   color: string; // Hex color
   icon?: string;
@@ -10,7 +10,7 @@ export interface ISubject extends Document {
 }
 
 const SubjectSchema: Schema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
   name: { type: String, required: true },
   color: { type: String, default: '#3498db' },
   icon: { type: String },
@@ -19,6 +19,7 @@ const SubjectSchema: Schema = new Schema({
 }, { timestamps: true });
 
 // Un utilisateur ne peut pas avoir deux matières avec le même nom
-SubjectSchema.index({ userId: 1, name: 1 }, { unique: true });
+// Si userId est absent, c'est une matière globale
+SubjectSchema.index({ userId: 1, name: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<ISubject>('Subject', SubjectSchema);

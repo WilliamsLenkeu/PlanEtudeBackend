@@ -3,10 +3,16 @@ import * as adminController from '../controllers/adminController';
 
 const router = Router();
 
-// UI pour le seeding (GET)
-router.get('/seed-ui', adminController.renderSeedUI);
+// Dashboard centralisé (GET)
+router.get('/dashboard', adminController.renderDashboard);
 
-// Action de seeding (POST)
-router.post('/seed', adminController.runSeed);
+// Action de seeding (SSE Stream)
+router.get('/seed-stream', adminController.streamSeed);
+
+// Stats MongoDB (GET)
+router.get('/stats', adminController.getMongoStats);
+
+// Nettoyage de la base (DELETE)
+router.delete('/clear', adminController.clearDatabase);
 
 export default router;

@@ -109,24 +109,47 @@ export const themes = [
 ];
 
 export const subjects = [
-  { name: 'Mathématiques 📐', color: '#FFB6C1', difficulty: 4 },
+  // --- TRONC COMMUN ---
   { name: 'Français ✍️', color: '#FFD1DC', difficulty: 3 },
+  { name: 'Philosophie 🧠', color: '#FFDAB9', difficulty: 5 },
+  { name: 'Mathématiques (Tronc Commun) 📐', color: '#FFB6C1', difficulty: 3 },
   { name: 'Histoire-Géographie 🌍', color: '#B19CD9', difficulty: 3 },
   { name: 'Enseignement Scientifique 🧪', color: '#98FF98', difficulty: 3 },
-  { name: 'Philosophie 🧠', color: '#FFDAB9', difficulty: 5 },
-  { name: 'Langues Vivantes (LVA/LVB) 🗣️', color: '#AAF0D1', difficulty: 3 },
+  { name: 'Anglais (LVA) 🇬🇧', color: '#AAF0D1', difficulty: 3 },
+  { name: 'Espagnol (LVB) 🇪🇸', color: '#FF8DA1', difficulty: 3 },
+  { name: 'Allemand (LVB) 🇩🇪', color: '#E6E6FA', difficulty: 3 },
+  { name: 'Italien (LVB) 🇮🇹', color: '#98FF98', difficulty: 3 },
   { name: 'EPS 🏃‍♀️', color: '#FF8DA1', difficulty: 2 },
   { name: 'EMC ⚖️', color: '#E6E6FA', difficulty: 2 },
+
+  // --- SPÉCIALITÉS GÉNÉRALES ---
   { name: 'Spé : Mathématiques 🧮', color: '#F20089', difficulty: 5 },
   { name: 'Spé : Physique-Chimie ⚗️', color: '#3EB489', difficulty: 5 },
   { name: 'Spé : SVT 🌿', color: '#98FF98', difficulty: 4 },
-  { name: 'Spé : NSI 💻', color: '#000000', difficulty: 4 },
   { name: 'Spé : SES 📈', color: '#FF8C00', difficulty: 4 },
   { name: 'Spé : HGGSP 🏛️', color: '#311B92', difficulty: 4 },
   { name: 'Spé : HLP 📚', color: '#5D2E36', difficulty: 4 },
-  { name: 'Spé : LLCE 📖', color: '#FFB7C5', difficulty: 3 },
+  { name: 'Spé : NSI 💻', color: '#000000', difficulty: 4 },
+  { name: 'Spé : SI ⚙️', color: '#1A4333', difficulty: 4 },
+  { name: 'Spé : LLCE Anglais 📖', color: '#FFB7C5', difficulty: 3 },
   { name: 'Spé : Arts 🎨', color: '#FF69B4', difficulty: 3 },
-  { name: 'Spé : SI ⚙️', color: '#1A4333', difficulty: 4 }
+  { name: 'Spé : Biologie-Écologie 🚜', color: '#3EB489', difficulty: 4 },
+
+  // --- FILIÈRES TECHNOLOGIQUES ---
+  // STMG
+  { name: 'STMG : Management & Gestion 💼', color: '#FFDAB9', difficulty: 3 },
+  { name: 'STMG : Droit & Économie ⚖️', color: '#B19CD9', difficulty: 4 },
+  // STI2D
+  { name: 'STI2D : Innovation & Eco-conception 🌱', color: '#3EB489', difficulty: 4 },
+  { name: 'STI2D : Systèmes d\'Information 📡', color: '#1A4333', difficulty: 4 },
+  // ST2S
+  { name: 'ST2S : Sciences Sanitaires 🏥', color: '#FFB6C1', difficulty: 4 },
+  { name: 'ST2S : Biologie Humaine 🧬', color: '#FFD1DC', difficulty: 4 },
+  // STL
+  { name: 'STL : Biotechnologies 🧪', color: '#98FF98', difficulty: 4 },
+  { name: 'STL : Sciences Physiques en Labo 🔬', color: '#3EB489', difficulty: 4 },
+  // STD2A
+  { name: 'STD2A : Design & Arts Appliqués ✏️', color: '#FF69B4', difficulty: 4 }
 ];
 
 export const seedThemes = async () => {
