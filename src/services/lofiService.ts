@@ -30,7 +30,7 @@ export const fetchLofiTracksFromJamendo = async (limit: number = 20): Promise<an
 
   try {
     console.log('🎵 Récupération de nouvelles pistes Lo-Fi sur Jamendo...');
-    const url = `${JAMENDO_BASE_URL}?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=${limit}&tags=lofi+chillout+ambient&order=rating_desc&include=musicinfo`;
+    const url = `${JAMENDO_BASE_URL}?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=${limit}&fuzzytags=lofi&order=popularity_total_desc&include=musicinfo`;
     
     const response = await fetch(url);
     if (!response.ok) {
