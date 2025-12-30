@@ -2,6 +2,7 @@ import Theme from './src/models/Theme.model';
 import LofiTrack from './src/models/LofiTrack.model';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { fetchLofiTracksFromJamendo } from './src/services/lofiService';
 
 dotenv.config();
 
@@ -110,30 +111,6 @@ const themes = [
   }
 ];
 
-const lofiTracks = [
-  {
-    title: 'Chilled Cow Focus',
-    artist: 'Lofi Girl',
-    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
-    thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/0.jpg',
-    category: 'focus'
-  },
-  {
-    title: 'Coffee Shop Vibes',
-    artist: 'Lofi Records',
-    url: 'https://www.youtube.com/watch?v=lTRiuFIWV54',
-    thumbnail: 'https://img.youtube.com/vi/lTRiuFIWV54/0.jpg',
-    category: 'relax'
-  },
-  {
-    title: 'Late Night Study',
-    artist: 'Study MD',
-    url: 'https://www.youtube.com/watch?v=4xDzrJKXOOY',
-    thumbnail: 'https://img.youtube.com/vi/4xDzrJKXOOY/0.jpg',
-    category: 'focus'
-  }
-];
-
 const seed = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI!);
@@ -143,9 +120,16 @@ const seed = async () => {
     await Theme.insertMany(themes);
     console.log('Thèmes ajoutés ! ✅');
 
-    await LofiTrack.deleteMany({});
-    await LofiTrack.insertMany(lofiTracks);
-    console.log('Pistes Lo-Fi ajoutées ! ✅');
+    // Récupération des vraies pistes depuis Jamendo
+    const realTracks = await fetchLofiTracksFromJamendo(30);
+    
+    if (realTracks.length > 0) {
+      await LofiTrack.deleteMany({});
+      await LofiTrack.insertMany(realTracks);
+      console.log(`${realTracks.length} pistes Lo-Fi réelles ajoutées depuis Jamendo ! ✅`);
+    } else {
+      console.log('Aucune piste récupérée depuis Jamendo, conservation des anciennes données.');
+    }
 
     mongoose.connection.close();
   } catch (error) {

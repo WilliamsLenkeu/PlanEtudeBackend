@@ -61,7 +61,28 @@ router.post('/register', validate(registerSchema), register);
  *         description: Identifiants incorrects
  */
 router.post('/login', validate(loginSchema), login);
-router.post('/google', googleLogin);
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Rafraîchir le token d'accès 🔄
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Nouveau token généré
+ */
 router.post('/refresh', refreshToken);
+
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Connexion via Google 🌐
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Connexion réussie via Google
+ */
+router.post('/google', googleLogin);
 
 export default router;

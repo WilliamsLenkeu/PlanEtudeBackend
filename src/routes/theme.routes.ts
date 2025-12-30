@@ -19,6 +19,8 @@ router.use(protect);
  *   get:
  *     summary: Liste tous les thèmes disponibles avec config complète 🎀
  *     tags: [Themes]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des thèmes et leurs configurations visuelles
@@ -31,7 +33,14 @@ router.use(protect);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Theme'
+ *                     type: object
+ *                     properties:
+ *                       key: { type: string }
+ *                       name: { type: string }
+ *                       description: { type: string }
+ *                       priceXP: { type: number }
+ *                       isPremium: { type: boolean }
+ *                       config: { type: object }
  */
 router.get('/', getThemes);
 
@@ -41,6 +50,8 @@ router.get('/', getThemes);
  *   post:
  *     summary: Débloquer un thème avec de l'XP ✨
  *     tags: [Themes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: key
@@ -50,6 +61,8 @@ router.get('/', getThemes);
  *     responses:
  *       200:
  *         description: Thème débloqué
+ *       400:
+ *         description: XP insuffisante ou thème déjà débloqué
  */
 router.post('/unlock/:key', unlockTheme);
 
@@ -59,6 +72,8 @@ router.post('/unlock/:key', unlockTheme);
  *   put:
  *     summary: Changer le thème actuel et récupérer sa config 🌸
  *     tags: [Themes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: key
@@ -74,6 +89,7 @@ router.post('/unlock/:key', unlockTheme);
  *               type: object
  *               properties:
  *                 success: { type: boolean, example: true }
+ *                 message: { type: string }
  *                 data:
  *                   type: object
  *                   properties:

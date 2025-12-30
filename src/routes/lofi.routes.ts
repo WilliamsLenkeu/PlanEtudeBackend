@@ -19,6 +19,8 @@ router.use(protect);
  *   get:
  *     summary: Liste les pistes Lo-Fi relaxantes (DB + Jamendo) 🎧
  *     tags: [LoFi]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des pistes récupérées avec succès
@@ -48,6 +50,20 @@ router.get('/', getLofiTracks);
  *   post:
  *     summary: Ajouter une piste Lo-Fi (Admin) ☁️
  *     tags: [LoFi]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               artist: { type: string }
+ *               url: { type: string }
+ *               thumbnail: { type: string }
+ *               category: { type: string }
  *     responses:
  *       201:
  *         description: Piste ajoutée
