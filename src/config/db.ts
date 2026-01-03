@@ -16,7 +16,7 @@ const connectDB = async () => {
       await User.create({
         name: 'Admin',
         email: adminEmail,
-        password: 'AdminPassword123!', // À changer dès la première connexion
+        password: 'AdminPassword123!',
         gender: 'M',
         role: 'admin',
         preferences: {
