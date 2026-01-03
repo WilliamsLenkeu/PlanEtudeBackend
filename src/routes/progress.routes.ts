@@ -2,7 +2,7 @@ import express from 'express';
 import { getProgress, createProgress, getProgressSummary } from '../controllers/progressController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
-import { progressSchema } from '../utils/validation';
+import { progressSchema } from '../schemas/common.schema';
 
 const router = express.Router();
 

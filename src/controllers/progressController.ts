@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import Progress from '../models/Progress.model';
 import User from '../models/User.model';
-import { addExperience, getRank } from '../utils/gamification';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -20,7 +19,7 @@ export const getProgress = async (req: AuthRequest, res: Response) => {
 };
 
 export const createProgress = async (req: AuthRequest, res: Response) => {
-  const { date, sessionsCompletees, tempsEtudie, notes } = req.body;
+  const { date, sessionsCompletees, tempsEtudie, notes, subjectName } = req.body;
 
   try {
     const progress = await Progress.create({
@@ -31,17 +30,34 @@ export const createProgress = async (req: AuthRequest, res: Response) => {
       notes,
     });
 
-    // Ajouter de l'XP : 10 XP par session complétée + 1 XP par 10 minutes d'étude
-    const xpToGain = (sessionsCompletees * 10) + Math.floor(tempsEtudie / 10);
-    const newGamification = await addExperience(req.user.id, xpToGain, tempsEtudie);
+    // Mise à jour des statistiques de l'utilisateur de manière simple et professionnelle
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.studyStats.totalStudyTime += tempsEtudie;
+      user.studyStats.lastStudyDate = new Date();
+
+      if (subjectName) {
+        const masteryIndex = user.studyStats.subjectMastery.findIndex(m => m.subjectName === subjectName);
+        const scoreGain = Math.min(5, tempsEtudie / 15); // Gain de score basé sur le temps
+
+        if (masteryIndex > -1) {
+          user.studyStats.subjectMastery[masteryIndex].score = Math.min(100, user.studyStats.subjectMastery[masteryIndex].score + scoreGain);
+          user.studyStats.subjectMastery[masteryIndex].lastStudied = new Date();
+        } else {
+          user.studyStats.subjectMastery.push({
+            subjectName,
+            score: scoreGain,
+            lastStudied: new Date()
+          });
+        }
+      }
+      await user.save();
+    }
 
     res.status(201).json({
       success: true,
-      message: `Bravo ! Tu as gagné ${xpToGain} XP. ✨`,
-      data: {
-        progress,
-        gamification: newGamification
-      }
+      message: 'Progression enregistrée avec succès. 📚',
+      data: progress
     });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
@@ -65,19 +81,12 @@ export const getProgressSummary = async (req: AuthRequest, res: Response) => {
             }}
         ]);
 
-        const g = user.gamification || { totalXP: 0, xp: 0, level: 1 };
-        const nextLevelXP = g.level * 100;
-        const xpToNextLevel = nextLevelXP - g.xp;
-
         res.json({
             success: true,
             data: {
-                totalXP: g.totalXP,
-                currentXP: g.xp,
-                level: g.level,
-                xpToNextLevel: xpToNextLevel > 0 ? xpToNextLevel : 0,
-                rank: getRank(g.level),
-                stats: stats[0] || { totalSessions: 0, totalTemps: 0, count: 0 }
+                totalStudyTime: user.studyStats.totalStudyTime,
+                subjectMastery: user.studyStats.subjectMastery,
+                historyStats: stats[0] || { totalSessions: 0, totalTemps: 0, count: 0 }
             }
         });
     } catch (error: any) {

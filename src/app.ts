@@ -1,15 +1,14 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes';
-import chatRoutes from './routes/chat.routes';
 import planningRoutes from './routes/planning.routes';
 import progressRoutes from './routes/progress.routes';
 import userRoutes from './routes/user.routes';
 import statsRoutes from './routes/stats.routes';
-import reminderRoutes from './routes/reminder.routes';
-import badgeRoutes from './routes/badge.routes';
 import subjectRoutes from './routes/subject.routes';
 import themeRoutes from './routes/theme.routes';
 import lofiRoutes from './routes/lofi.routes';
@@ -20,6 +19,10 @@ import { notFound, errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
+// Configuration du moteur de template EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Configuration pour les proxies (nécessaire pour Koyeb, Heroku, etc.)
 app.set('trust proxy', 1);
 
@@ -28,11 +31,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "'unsafe-inline'"],
+      "script-src": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://unpkg.com/lucide@latest"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css"],
     },
   },
 }));
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 
 // Swagger Documentation
@@ -54,13 +59,10 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/chat', chatRoutes);
 app.use('/api/planning', planningRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
-app.use('/api/reminders', reminderRoutes);
-app.use('/api/badges', badgeRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/themes', themeRoutes);
 app.use('/api/lofi', lofiRoutes);

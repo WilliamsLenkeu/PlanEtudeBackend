@@ -1,7 +1,7 @@
 import express from 'express';
 import { register, login, googleLogin, refreshToken } from '../controllers/authController';
 import { validate } from '../middleware/validateMiddleware';
-import { registerSchema, loginSchema } from '../utils/validation';
+import { registerSchema, loginSchema } from '../schemas/auth.schema';
 
 const router = express.Router();
 

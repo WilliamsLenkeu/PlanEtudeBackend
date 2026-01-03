@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
   email: string;
@@ -12,45 +13,17 @@ export interface IUser extends Document {
     unlockedThemes: string[];
     matieres: string[];
   };
-  gamification: {
-    totalXP: number;
-    xp: number;
-    level: number;
-    streak: number;
-    lastStudyDate?: Date;
+  studyStats: {
     totalStudyTime: number; // en minutes
-    notifications: Array<{
-      id: string;
-      type: 'badge' | 'quest' | 'level';
-      message: string;
-      read: boolean;
-      createdAt: Date;
-    }>;
-    companion: {
-      name: string;
-      type: string; // ex: "Chat", "Lapin", "Fée"
-      level: number;
-      evolutionStage: number; // 1, 2, 3
-      happiness: number; // 0-100
-      lastFed?: Date;
-    };
+    lastStudyDate?: Date;
     subjectMastery: Array<{
       subjectName: string;
       score: number; // 0-100
       lastStudied: Date;
     }>;
-    dailyQuests: Array<{
-      key: string;
-      title: string;
-      description: string;
-      xpReward: number;
-      isCompleted: boolean;
-      target: number;
-      current: number;
-    }>;
-    lastQuestReset?: Date;
   };
   createdAt: Date;
+  comparePassword(password: string): Promise<boolean>;
 }
 
 const UserSchema: Schema = new Schema({
@@ -65,44 +38,27 @@ const UserSchema: Schema = new Schema({
     unlockedThemes: { type: [String], default: ['classic-pink'] },
     matieres: [String],
   },
-  gamification: {
-    totalXP: { type: Number, default: 0 },
-    xp: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    streak: { type: Number, default: 0 },
-    lastStudyDate: { type: Date },
+  studyStats: {
     totalStudyTime: { type: Number, default: 0 },
-    notifications: [{
-      id: String,
-      type: { type: String, enum: ['badge', 'quest', 'level'] },
-      message: String,
-      read: { type: Boolean, default: false },
-      createdAt: { type: Date, default: Date.now }
-    }],
-    companion: {
-      name: { type: String, default: 'Yumi' },
-      type: { type: String, default: 'Chat' },
-      level: { type: Number, default: 1 },
-      evolutionStage: { type: Number, default: 1 },
-      happiness: { type: Number, default: 100 },
-      lastFed: { type: Date }
-    },
+    lastStudyDate: { type: Date },
     subjectMastery: [{
       subjectName: String,
       score: { type: Number, default: 0 },
       lastStudied: { type: Date, default: Date.now }
     }],
-    dailyQuests: [{
-      key: String,
-      title: String,
-      description: String,
-      xpReward: Number,
-      isCompleted: { type: Boolean, default: false },
-      target: { type: Number, default: 1 },
-      current: { type: Number, default: 0 }
-    }],
-    lastQuestReset: { type: Date, default: Date.now }
   },
 }, { timestamps: true });
+
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password as string, salt);
+  next();
+});
+
+UserSchema.methods.comparePassword = async function (password: string) {
+  if (!this.password) return false;
+  return bcrypt.compare(password, this.password);
+};
 
 export default mongoose.model<IUser>('User', UserSchema);

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import User from '../models/User.model';
 import Theme from '../models/Theme.model';
 import bcrypt from 'bcryptjs';
-import { getRank } from '../utils/gamification';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -22,13 +21,11 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     const theme = await Theme.findOne({ key: user.preferences.currentTheme });
 
     const userData = user.toObject();
-    const rank = getRank(user.gamification?.level || 1);
 
     res.json({
       success: true,
       data: {
         ...userData,
-        rank,
         themeConfig: theme ? theme.config : null
       }
     });

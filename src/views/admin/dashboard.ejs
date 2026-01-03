@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanÉtude | Dashboard Admin</title>
+    <!-- Tailwind CSS & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-base-200 min-h-screen">
+    <div class="drawer lg:drawer-open">
+        <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col p-4 lg:p-8">
+            <!-- Mobile Navbar -->
+            <div class="lg:hidden navbar bg-base-100 rounded-box shadow mb-4">
+                <div class="flex-none">
+                    <label for="my-drawer-2" class="btn btn-square btn-ghost">
+                        <i data-lucide="menu"></i>
+                    </label>
+                </div>
+                <div class="flex-1">
+                    <a class="btn btn-ghost text-xl">PlanÉtude Admin</a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="stats shadow bg-base-100">
+                    <div class="stat">
+                        <div class="stat-figure text-primary"><i data-lucide="users"></i></div>
+                        <div class="stat-title">Utilisateurs</div>
+                        <div id="stat-users" class="stat-value text-primary">...</div>
+                    </div>
+                </div>
+                <div class="stats shadow bg-base-100">
+                    <div class="stat">
+                        <div class="stat-figure text-secondary"><i data-lucide="book-open"></i></div>
+                        <div class="stat-title">Matières</div>
+                        <div id="stat-subjects" class="stat-value text-secondary">...</div>
+                    </div>
+                </div>
+                <div class="stats shadow bg-base-100">
+                    <div class="stat">
+                        <div class="stat-figure text-accent"><i data-lucide="palette"></i></div>
+                        <div class="stat-title">Thèmes</div>
+                        <div id="stat-themes" class="stat-value text-accent">...</div>
+                    </div>
+                </div>
+                <div class="stats shadow bg-base-100">
+                    <div class="stat">
+                        <div class="stat-figure text-info"><i data-lucide="music"></i></div>
+                        <div class="stat-title">Musiques</div>
+                        <div id="stat-lofi" class="stat-value text-info">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <!-- Main Content: Plannings -->
+                <div class="xl:col-span-2 space-y-8">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="card-title text-2xl">
+                                    <i data-lucide="calendar"></i>
+                                    Plannings Récents
+                                </h2>
+                                <button onclick="updateStats()" class="btn btn-sm btn-ghost">
+                                    <i data-lucide="refresh-cw"></i>
+                                    Actualiser
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Utilisateur</th>
+                                            <th>Période</th>
+                                            <th>Date Début</th>
+                                            <th>Sessions</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="plannings-table">
+                                        <!-- Rempli par JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Content -->
+                <div class="space-y-8">
+                    <!-- Initialization -->
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title">
+                                <i data-lucide="database"></i>
+                                Initialisation (Seed)
+                            </h2>
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">Thèmes pastel</span> 
+                                    <input type="checkbox" id="themes" checked class="checkbox checkbox-primary" />
+                                </label>
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">Matières Lycée</span> 
+                                    <input type="checkbox" id="subjects" checked class="checkbox checkbox-primary" />
+                                </label>
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">Musiques Lo-Fi</span> 
+                                    <input type="checkbox" id="lofi" checked class="checkbox checkbox-primary" />
+                                </label>
+                            </div>
+                            <div class="card-actions mt-4">
+                                <button id="runSeedBtn" class="btn btn-primary w-full">
+                                    <i data-lucide="play"></i>
+                                    Lancer le Seeding
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="card bg-error bg-opacity-10 border border-error shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title text-error">
+                                <i data-lucide="alert-triangle"></i>
+                                Zone de Danger
+                            </h2>
+                            <p class="text-xs opacity-70">Actions irréversibles sur la base de données.</p>
+                            <div class="flex flex-col gap-2 mt-4">
+                                <button onclick="clearCollection('users')" class="btn btn-outline btn-error btn-sm">Vider Utilisateurs</button>
+                                <button onclick="clearCollection('plannings')" class="btn btn-outline btn-error btn-sm">Vider Plannings</button>
+                                <button onclick="clearCollection('subjects')" class="btn btn-outline btn-error btn-sm">Vider Matières</button>
+                                <div class="divider"></div>
+                                <button onclick="clearCollection('all')" class="btn btn-error btn-sm">RESET TOTAL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Console Log -->
+            <div class="mt-8 card bg-neutral text-neutral-content shadow-xl">
+                <div class="card-body p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold flex items-center gap-2">
+                            <i data-lucide="terminal"></i>
+                            Console de logs
+                        </h3>
+                        <button onclick="document.getElementById('log-console').innerHTML = ''" class="btn btn-xs btn-ghost">Effacer</button>
+                    </div>
+                    <div id="log-console" class="h-48 overflow-y-auto font-mono text-xs bg-black bg-opacity-30 p-4 rounded-lg">
+                        <div class="text-success">[SYSTEM] Console prête.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation (Desktop) -->
+        <div class="drawer-side">
+            <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                <li class="mb-4">
+                    <div class="flex items-center gap-2 px-4 py-2">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                <span>A</span>
+                            </div>
+                        </div>
+                        <span class="font-bold text-xl">PlanÉtude Admin</span>
+                    </div>
+                </li>
+                <li><a class="active" href="/api/admin"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                <li><a href="/api-docs"><i data-lucide="file-text"></i> Documentation API</a></li>
+                <div class="mt-auto">
+                    <div class="divider"></div>
+                    <li><a href="/" class="text-error"><i data-lucide="log-out"></i> Retour au Site</a></li>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialiser Lucide Icons
+        lucide.createIcons();
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('stat-themes').innerText = result.data.stats.themes;
+                    document.getElementById('stat-subjects').innerText = result.data.stats.subjects;
+                    document.getElementById('stat-lofi').innerText = result.data.stats.lofi;
+                    document.getElementById('stat-users').innerText = result.data.stats.users;
+
+                    const tableBody = document.getElementById('plannings-table');
+                    tableBody.innerHTML = '';
+                    result.data.recentPlannings.forEach(p => {
+                        const row = document.createElement('tr');
+                        row.className = "hover";
+                        row.innerHTML = `
+                            <td>
+                                <div class="flex items-center space-x-3">
+                                    <div>
+                                        <div class="font-bold">${p.userId?.username || 'Inconnu'}</div>
+                                        <div class="text-sm opacity-50">${p.userId?.email || '-'}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-ghost">${p.periode}</span></td>
+                            <td>${new Date(p.dateDebut).toLocaleDateString()}</td>
+                            <td><div class="badge badge-outline">${p.sessions.length} sessions</div></td>
+                            <td>
+                                <button onclick="deletePlanning('${p._id}')" class="btn btn-ghost btn-xs text-error">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    lucide.createIcons(); // Re-initialiser les icones dans le tableau
+                }
+            } catch (err) { addLog('Erreur lors de la mise à jour des stats', 'error'); }
+        }
+
+        async function deletePlanning(id) {
+            if (!confirm('Supprimer ce planning ?')) return;
+            try {
+                const response = await fetch(`/api/admin/planning/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.success) {
+                    addLog('Planning supprimé avec succès', 'success');
+                    updateStats();
+                }
+            } catch (err) { addLog('Erreur lors de la suppression', 'error'); }
+        }
+
+        function addLog(message, type = 'info') {
+            const consoleDiv = document.getElementById('log-console');
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString();
+            
+            const colors = {
+                error: 'text-error',
+                success: 'text-success',
+                warn: 'text-warning',
+                info: 'text-info'
+            };
+            
+            div.className = colors[type] || 'text-info';
+            div.innerHTML = `[${time}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        document.getElementById('runSeedBtn').addEventListener('click', function() {
+            const themes = document.getElementById('themes').checked;
+            const subjects = document.getElementById('subjects').checked;
+            const lofi = document.getElementById('lofi').checked;
+
+            if (!themes && !subjects && !lofi) {
+                alert('Sélectionnez au moins une option');
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<span class="loading loading-spinner"></span> Seeding...';
+            
+            const eventSource = new EventSource(`/api/admin/seed-stream?themes=${themes}&subjects=${subjects}&lofi=${lofi}`);
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                addLog(data.message, data.type);
+            };
+
+            eventSource.addEventListener('end', (event) => {
+                eventSource.close();
+                this.disabled = false;
+                this.innerHTML = '<i data-lucide="play"></i> Lancer le Seeding';
+                lucide.createIcons();
+                addLog('Processus de seeding terminé', 'success');
+                updateStats();
+            });
+
+            eventSource.onerror = (err) => {
+                eventSource.close();
+                addLog('Erreur de connexion au flux (SSE)', 'error');
+                this.disabled = false;
+                this.innerHTML = '<i data-lucide="play"></i> Lancer le Seeding';
+                lucide.createIcons();
+            };
+        });
+
+        async function clearCollection(type) {
+            if (!confirm(`Confirmer suppression définitive de : ${type} ?`)) return;
+            try {
+                const response = await fetch('/api/admin/clear', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addLog(`Collection ${type} nettoyée`, 'success');
+                    updateStats();
+                } else { addLog(result.message, 'error'); }
+            } catch (err) { addLog('Erreur lors du nettoyage', 'error'); }
+        }
+
+        updateStats();
+    </script>
+</body>
+</html>

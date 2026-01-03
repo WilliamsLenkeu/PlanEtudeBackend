@@ -7,143 +7,7 @@ import User from '../models/User.model';
 import Planning from '../models/Planning.model';
 
 export const renderDashboard = (req: Request, res: Response) => {
-  const html = `
-    <!DOCTYPE html>
-    <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <title>PlanÉtude | Admin Simple</title>
-        <style>
-            body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: 0 auto; background: #f4f4f4; }
-            .card { background: white; padding: 20px; border: 1px solid #ccc; margin-bottom: 20px; border-radius: 8px; }
-            .danger { border-color: red; background: #fff5f5; }
-            .console { background: #222; color: #0f0; padding: 15px; height: 300px; overflow-y: auto; font-family: monospace; border-radius: 4px; }
-            button { padding: 10px 15px; cursor: pointer; margin-right: 5px; margin-bottom: 5px; }
-            .btn-seed { background: #4CAF50; color: white; border: none; font-weight: bold; }
-            .btn-danger { background: #f44336; color: white; border: none; }
-            .stats span { font-weight: bold; color: #333; margin-right: 15px; }
-        </style>
-    </head>
-    <body>
-        <h1>Administration PlanÉtude</h1>
-        
-        <div class="card">
-            <h3>Statistiques</h3>
-            <p class="stats">
-                Utilisateurs: <span id="stat-users">...</span>
-                Matières: <span id="stat-subjects">...</span>
-                Thèmes: <span id="stat-themes">...</span>
-                Musiques: <span id="stat-lofi">...</span>
-            </p>
-            <button onclick="updateStats()">Rafraîchir les stats</button>
-        </div>
-
-        <div class="card">
-            <h3>Initialisation (Seed)</h3>
-            <p>
-                <input type="checkbox" id="themes" checked> <label for="themes">Thèmes</label><br>
-                <input type="checkbox" id="subjects" checked> <label for="subjects">Matières</label><br>
-                <input type="checkbox" id="lofi" checked> <label for="lofi">Musiques (Lo-Fi)</label>
-            </p>
-            <button id="runSeedBtn" class="btn-seed">Lancer le seeding</button>
-        </div>
-
-        <div class="card danger">
-            <h3>Zone de Danger</h3>
-            <button onclick="clearCollection('users')" class="btn-danger">Vider Utilisateurs</button>
-            <button onclick="clearCollection('plannings')" class="btn-danger">Vider Plannings</button>
-            <button onclick="clearCollection('subjects')" class="btn-danger">Vider Matières</button>
-            <button onclick="clearCollection('all')" class="btn-danger">RESET TOTAL</button>
-        </div>
-
-        <div class="card">
-            <h3>Console de logs</h3>
-            <button onclick="document.getElementById('log-console').innerHTML = ''">Effacer</button>
-            <div id="log-console" class="console"></div>
-        </div>
-
-        <script>
-            async function updateStats() {
-                try {
-                    const response = await fetch('/api/admin/stats');
-                    const result = await response.json();
-                    if (result.success) {
-                        document.getElementById('stat-themes').innerText = result.data.themes;
-                        document.getElementById('stat-subjects').innerText = result.data.subjects;
-                        document.getElementById('stat-lofi').innerText = result.data.lofi;
-                        document.getElementById('stat-users').innerText = result.data.users;
-                    }
-                } catch (err) { console.error('Stats failed'); }
-            }
-
-            function addLog(message, type = 'info') {
-                const console = document.getElementById('log-console');
-                const div = document.createElement('div');
-                const time = new Date().toLocaleTimeString();
-                div.style.color = type === 'error' ? 'red' : (type === 'success' ? 'lightgreen' : (type === 'warn' ? 'orange' : '#0f0'));
-                div.innerHTML = \`[\${time}] \${message}\`;
-                console.appendChild(div);
-                console.scrollTop = console.scrollHeight;
-            }
-
-            document.getElementById('runSeedBtn').addEventListener('click', function() {
-                const themes = document.getElementById('themes').checked;
-                const subjects = document.getElementById('subjects').checked;
-                const lofi = document.getElementById('lofi').checked;
-
-                if (!themes && !subjects && !lofi) {
-                    alert('Sélectionnez au moins une option');
-                    return;
-                }
-
-                this.disabled = true;
-                this.innerText = 'Seeding en cours...';
-                
-                const eventSource = new EventSource(\`/api/admin/seed-stream?themes=\${themes}&subjects=\${subjects}&lofi=\${lofi}\`);
-                
-                eventSource.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    addLog(data.message, data.type);
-                };
-
-                eventSource.addEventListener('end', (event) => {
-                    eventSource.close();
-                    this.disabled = false;
-                    this.innerText = 'Lancer le seeding';
-                    alert('Terminé !');
-                    updateStats();
-                });
-
-                eventSource.onerror = (err) => {
-                    eventSource.close();
-                    addLog('Erreur SSE', 'error');
-                    this.disabled = false;
-                    this.innerText = 'Lancer le seeding';
-                };
-            });
-
-            async function clearCollection(type) {
-                if (!confirm(\`Confirmer suppression : \${type} ?\`)) return;
-                try {
-                    const response = await fetch('/api/admin/clear', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Réussi !');
-                        updateStats();
-                    } else { alert(result.message); }
-                } catch (err) { alert('Erreur'); }
-            }
-
-            updateStats();
-        </script>
-    </body>
-    </html>
-  `;
-  res.send(html);
+  res.render('admin/dashboard');
 };
 
 export const streamSeed = async (req: Request, res: Response) => {
@@ -203,8 +67,31 @@ export const getMongoStats = async (req: Request, res: Response) => {
       users: await User.countDocuments(),
       plannings: await Planning.countDocuments()
     };
-    res.json({ success: true, data: stats });
+    
+    // Récupérer les 10 derniers plannings créés pour la gestion
+    const recentPlannings = await Planning.find()
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.json({ 
+      success: true, 
+      data: {
+        stats,
+        recentPlannings
+      }
+    });
   } catch (error: any) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const deletePlanning = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await Planning.findByIdAndDelete(id);
+    res.json({ success: true, message: 'Planning supprimé avec succès' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 export const clearDatabase = async (req: Request, res: Response) => {

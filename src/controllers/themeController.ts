@@ -18,10 +18,10 @@ export const getThemes = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Utilisateur non trouvé ✨' });
     }
 
-    // On rajoute l'information "débloqué" pour chaque thème
+    // Tous les thèmes sont désormais gratuits et débloqués par défaut
     const themesWithStatus = themes.map(theme => ({
       ...theme.toObject(),
-      isUnlocked: user.preferences.unlockedThemes.includes(theme.key),
+      isUnlocked: true,
       isCurrent: user.preferences.currentTheme === theme.key
     }));
 
@@ -34,51 +34,7 @@ export const getThemes = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// @desc    Acheter/Débloquer un thème avec de l'XP
-// @route   POST /api/themes/unlock/:key
-// @access  Private
-export const unlockTheme = async (req: AuthRequest, res: Response) => {
-  try {
-    const { key } = req.params;
-    const user = await User.findById(req.user.id);
-    const theme = await Theme.findOne({ key });
-
-    if (!user || !theme) {
-      return res.status(404).json({ success: false, message: 'Utilisateur ou Thème non trouvé ✨' });
-    }
-
-    if (user.preferences.unlockedThemes.includes(key)) {
-      return res.status(400).json({ success: false, message: 'Tu as déjà débloqué ce thème ! 🎀' });
-    }
-
-    if (user.gamification.xp < theme.priceXP) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Il te manque ${theme.priceXP - user.gamification.xp} XP pour ce thème ! ✨` 
-      });
-    }
-
-    user.gamification.xp -= theme.priceXP;
-    // On stocke la clé du thème (ex: 'strawberry-milk')
-    user.preferences.unlockedThemes.push(theme.key);
-    
-    await user.save();
-
-    res.json({
-      success: true,
-      message: `Bravo ! Tu as débloqué le thème ${theme.name} ! 🍭`,
-      data: {
-        unlockedThemes: user.preferences.unlockedThemes,
-        remainingXP: user.gamification.xp,
-        themeConfig: theme.config // On renvoie la config pour l'appliquer direct si besoin
-      }
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// @desc    Changer le thème actuel
+// @desc    Changer le thème actuel (Gratuit pour tous)
 // @route   PUT /api/themes/set/:key
 // @access  Private
 export const setCurrentTheme = async (req: AuthRequest, res: Response) => {
@@ -91,19 +47,16 @@ export const setCurrentTheme = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Utilisateur ou Thème non trouvé ✨' });
     }
 
-    if (!user.preferences.unlockedThemes.includes(key)) {
-      return res.status(400).json({ success: false, message: 'Tu dois d\'abord débloquer ce thème ! 🎀' });
-    }
-
+    // Plus besoin de vérifier unlockedThemes car tout est gratuit
     user.preferences.currentTheme = key;
     await user.save();
 
     res.json({
       success: true,
-      message: 'Thème mis à jour ! 🌸',
+      message: 'Thème mis à jour avec succès ! 🌸',
       data: {
         currentTheme: user.preferences.currentTheme,
-        themeConfig: theme.config // ESSENTIEL : On renvoie les variables CSS/Couleurs ici
+        themeConfig: theme.config
       }
     });
   } catch (error: any) {

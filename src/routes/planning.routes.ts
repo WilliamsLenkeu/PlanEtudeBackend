@@ -7,10 +7,11 @@ import {
   exportIcal,
   exportPdf,
   updateSessionStatus,
+  generatePlanning,
 } from '../controllers/planningController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
-import { planningSchema } from '../utils/validation';
+import { planningSchema, generatePlanningSchema } from '../schemas/planning.schema';
 
 const router = express.Router();
 
@@ -80,6 +81,8 @@ router.use(protect); // Toutes les routes planning sont protégées
 router.route('/')
   .get(getPlannings)
   .post(validate(planningSchema), createPlanning);
+
+router.post('/generate', validate(generatePlanningSchema), generatePlanning);
 
 /**
  * @swagger

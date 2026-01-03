@@ -1,11 +1,35 @@
 import { Request, Response } from 'express';
 import Planning from '../models/Planning.model';
+import User from '../models/User.model';
 import PDFDocument from 'pdfkit';
-import { addExperience } from '../utils/gamification';
+import { generateHybridPlanning } from '../services/planningService';
 
 interface AuthRequest extends Request {
   user?: any;
 }
+
+// @desc    Générer un planning hybride optimisé
+// @route   POST /api/planning/generate
+// @access  Private
+export const generatePlanning = async (req: AuthRequest, res: Response) => {
+  try {
+    const { periode, dateDebut } = req.body;
+    const user = await User.findById(req.user.id);
+    
+    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+
+    const sessions = generateHybridPlanning({
+      periode,
+      dateDebut: new Date(dateDebut),
+      matieres: user.preferences?.matieres || [],
+      userMastery: user.studyStats?.subjectMastery || []
+    });
+
+    res.json({ success: true, data: sessions });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Mettre à jour le statut d'une session (ex: passer à 'termine')
 // @route   PATCH /api/plannings/:id/sessions/:sessionId
@@ -22,25 +46,10 @@ export const updateSessionStatus = async (req: AuthRequest, res: Response) => {
     const session = (planning.sessions as any).id(sessionId);
     if (!session) return res.status(404).json({ success: false, message: 'Session non trouvée' });
 
-    const oldStatus = session.statut;
     session.statut = statut || session.statut;
     if (notes) session.notes = notes;
 
     await planning.save();
-
-    // Si la session vient d'être terminée, on ajoute de l'XP et de la maîtrise
-    if (oldStatus !== 'termine' && statut === 'termine') {
-      const durationMinutes = Math.floor((new Date(session.fin).getTime() - new Date(session.debut).getTime()) / (1000 * 60));
-      const xpToGain = Math.floor(durationMinutes / 2) + 10; // 10 XP base + 1 XP par 2 min
-
-      const gamification = await addExperience(req.user.id, xpToGain, durationMinutes, session.matiere);
-
-      return res.json({
-        success: true,
-        message: `Session terminée ! +${xpToGain} XP gagnés. ✨`,
-        data: { planning, gamification }
-      });
-    }
 
     res.json({ success: true, data: planning });
   } catch (error: any) {

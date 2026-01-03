@@ -7,7 +7,7 @@ import {
 } from '../controllers/subjectController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
-import { subjectSchema } from '../utils/validation';
+import { subjectSchema } from '../schemas/common.schema';
 
 const router = express.Router();
 
