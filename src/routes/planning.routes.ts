@@ -132,7 +132,7 @@ router.route('/:id')
  * @swagger
  * /planning/{id}/sessions/{sessionId}:
  *   patch:
- *     summary: Mettre à jour le statut d'une session spécifique (ex: terminer) ✨
+ *     summary: "Mettre à jour le statut d'une session spécifique (ex: terminer) ✨"
  *     tags: [Planning]
  *     security:
  *       - bearerAuth: []

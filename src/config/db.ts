@@ -14,10 +14,16 @@ const connectDB = async () => {
     if (!adminExists) {
       console.log('👑 Création de l\'utilisateur Admin par défaut...');
       await User.create({
-        username: 'Admin',
+        name: 'Admin',
         email: adminEmail,
         password: 'AdminPassword123!', // À changer dès la première connexion
+        gender: 'M',
         role: 'admin',
+        preferences: {
+          currentTheme: 'classic-pink',
+          unlockedThemes: ['classic-pink'],
+          matieres: []
+        },
         studyStats: {
           totalStudyTime: 0,
           subjectMastery: []

@@ -7,7 +7,8 @@ export interface IUser extends Document {
   googleId?: string;
   avatar?: string;
   name: string;
-  gender: 'M' | 'F' | 'Autre';
+  gender: 'M' | 'F';
+  role: 'user' | 'admin';
   preferences: {
     currentTheme: string;
     unlockedThemes: string[];
@@ -32,7 +33,8 @@ const UserSchema: Schema = new Schema({
   googleId: { type: String, unique: true, sparse: true },
   avatar: { type: String },
   name: { type: String, required: true },
-  gender: { type: String, enum: ['M', 'F', 'Autre'], required: true },
+  gender: { type: String, enum: ['M', 'F'], required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   preferences: {
     currentTheme: { type: String, default: 'classic-pink' },
     unlockedThemes: { type: [String], default: ['classic-pink'] },

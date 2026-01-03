@@ -100,6 +100,7 @@ export const googleLogin = async (req: Request, res: Response) => {
         name: name || 'Utilisateur Google',
         googleId: sub,
         avatar: picture,
+        gender: 'M',
         preferences: { themes: [], matieres: [] },
         studyStats: { totalStudyTime: 0, subjectMastery: [] }
       });
