@@ -41,15 +41,23 @@ export const generateAIPanning = async (promptData: any) => {
         },
         {
           role: 'user',
-          content: `Génère un planning pour les données suivantes : ${JSON.stringify(promptData)}`
+          content: `Génère un planning d'étude complet avec au moins 4 sessions par jour.
+          Données utilisateur : ${JSON.stringify(promptData)}
+          
+          IMPORTANT : Tu DOIS retourner un tableau 'sessions' non vide contenant les créneaux horaires détaillés pour chaque jour de la période demandée.`
         }
       ],
       responseFormat: { type: 'json_object' }
     });
 
     const content = response.choices?.[0]?.message?.content;
+
     if (typeof content === 'string') {
-        return JSON.parse(content);
+      console.log('\n--- RÉPONSE BRUTE DE L\'IA ---');
+      console.log(content);
+      console.log('--- FIN DE LA RÉPONSE ---\n');
+      
+      return JSON.parse(content);
     }
     throw new Error('Réponse vide de Mistral AI');
   } catch (error) {
