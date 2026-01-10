@@ -53,32 +53,26 @@ export const generateAIPanning = async (promptData: any, onSessionGenerated?: (s
     let fullContent = '';
     let buffer = '';
     let sessionCount = 0;
-    let totalBraceCount = 0;
+    let braceCount = 0;
+    let startIndex = -1;
 
     for await (const chunk of stream) {
       const delta = chunk.data.choices[0].delta.content || '';
       fullContent += delta;
-      buffer += delta;
-
-      // Logique d'extraction par profondeur d'accolades
-      let i = 0;
-      while (i < buffer.length) {
-        const char = buffer[i];
-        
+      
+      for (const char of delta) {
+        buffer += char;
         if (char === '{') {
-          totalBraceCount++;
-          // Si on ouvre une accolade à la profondeur 2, c'est potentiellement une session
-          // Structure attendue : { "titre": "...", "sessions": [ { session1 }, { session2 } ] }
-          if (totalBraceCount === 2) {
-            // On a trouvé le début d'une session, on garde tout ce qui suit à partir d'ici
-            buffer = buffer.substring(i);
-            i = 0; // On repart du début du nouveau buffer
+          braceCount++;
+          if (braceCount === 2) {
+            // Début d'un objet session
+            startIndex = buffer.length - 1;
           }
         } else if (char === '}') {
-          totalBraceCount--;
-          // Si on ferme une accolade qui était à la profondeur 2
-          if (totalBraceCount === 1) {
-            const potentialSessionStr = buffer.substring(0, i + 1);
+          braceCount--;
+          if (braceCount === 1 && startIndex !== -1) {
+            // Fin d'un objet session
+            const potentialSessionStr = buffer.substring(startIndex);
             try {
               const parsed = JSON.parse(potentialSessionStr);
               if (parsed.matiere && onSessionGenerated) {
@@ -86,14 +80,13 @@ export const generateAIPanning = async (promptData: any, onSessionGenerated?: (s
                 onSessionGenerated(parsed);
               }
             } catch (e) {
-              // JSON incomplet ou invalide, on ignore
+              // JSON invalide, on ignore
             }
-            // On nettoie le buffer jusqu'à la fin de cette session
-            buffer = buffer.substring(i + 1);
-            i = -1; // On recommencera à 0 après l'incrément i++
+            startIndex = -1;
+            // On ne vide pas tout le buffer car on a besoin de garder la structure parente
+            // mais on peut nettoyer ce qui a déjà été traité pour économiser de la mémoire
           }
         }
-        i++;
       }
     }
 
