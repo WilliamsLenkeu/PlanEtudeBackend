@@ -84,6 +84,6 @@ router.route('/')
  *                 xpToNextLevel: 35
  *                 rank: "Apprentie studieuse 🎀"
  */
-router.get('/summary', getProgressSummary);
+router.get('/summary', protect, getProgressSummary);
 
 export default router;

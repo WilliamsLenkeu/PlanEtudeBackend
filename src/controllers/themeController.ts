@@ -1,6 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Theme from '../models/Theme.model';
 import User from '../models/User.model';
+import { AppError } from '../middleware/errorHandler';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -9,13 +10,13 @@ interface AuthRequest extends Request {
 // @desc    Récupérer tous les thèmes disponibles
 // @route   GET /api/themes
 // @access  Private
-export const getThemes = async (req: AuthRequest, res: Response) => {
+export const getThemes = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const themes = await Theme.find();
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé ✨' });
+      return next(new AppError('Utilisateur non trouvé', 404));
     }
 
     // Tous les thèmes sont désormais gratuits et débloqués par défaut
@@ -30,21 +31,25 @@ export const getThemes = async (req: AuthRequest, res: Response) => {
       data: themesWithStatus
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la récupération des thèmes: ${error.message}`, 500));
   }
 };
 
 // @desc    Changer le thème actuel (Gratuit pour tous)
 // @route   PUT /api/themes/set/:key
 // @access  Private
-export const setCurrentTheme = async (req: AuthRequest, res: Response) => {
+export const setCurrentTheme = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { key } = req.params;
     const user = await User.findById(req.user.id);
     const theme = await Theme.findOne({ key });
 
-    if (!user || !theme) {
-      return res.status(404).json({ success: false, message: 'Utilisateur ou Thème non trouvé ✨' });
+    if (!user) {
+      return next(new AppError('Utilisateur non trouvé', 404));
+    }
+    
+    if (!theme) {
+      return next(new AppError('Thème non trouvé - La clé fournie est incorrecte', 404));
     }
 
     // Plus besoin de vérifier unlockedThemes car tout est gratuit
@@ -60,6 +65,6 @@ export const setCurrentTheme = async (req: AuthRequest, res: Response) => {
       }
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors du changement de thème: ${error.message}`, 500));
   }
 };

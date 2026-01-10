@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.model';
+import { AppError } from './errorHandler';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -17,17 +18,17 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
       // Vérifier si l'utilisateur existe toujours
       const currentUser = await User.findById(decoded.id).select('-password');
       if (!currentUser) {
-        return res.status(401).json({ message: 'L\'utilisateur appartenant à ce token n\'existe plus' });
+        return next(new AppError('L\'utilisateur appartenant à ce token n\'existe plus', 401, 'AUTH'));
       }
 
       req.user = decoded;
-      next();
+      return next();
     } catch (error) {
-      res.status(401).json({ message: 'Non autorisé, token invalide' });
+      return next(new AppError('Non autorisé, session expirée ou token invalide', 401, 'AUTH'));
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Non autorisé, pas de token' });
+    return next(new AppError('Accès refusé - Aucun jeton d\'authentification fourni', 401, 'AUTH'));
   }
 };

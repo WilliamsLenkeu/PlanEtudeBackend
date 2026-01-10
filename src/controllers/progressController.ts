@@ -1,12 +1,13 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Progress from '../models/Progress.model';
 import User from '../models/User.model';
+import { AppError } from '../middleware/errorHandler';
 
 interface AuthRequest extends Request {
   user?: any;
 }
 
-export const getProgress = async (req: AuthRequest, res: Response) => {
+export const getProgress = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const progress = await Progress.find({ userId: req.user.id }).sort({ date: -1 });
     res.json({
@@ -14,11 +15,11 @@ export const getProgress = async (req: AuthRequest, res: Response) => {
       data: progress
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la récupération de la progression: ${error.message}`, 500));
   }
 };
 
-export const createProgress = async (req: AuthRequest, res: Response) => {
+export const createProgress = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const { date, sessionsCompletees, tempsEtudie, notes, subjectName } = req.body;
 
   try {
@@ -30,29 +31,31 @@ export const createProgress = async (req: AuthRequest, res: Response) => {
       notes,
     });
 
-    // Mise à jour des statistiques de l'utilisateur de manière simple et professionnelle
+    // Mise à jour des statistiques de l'utilisateur
     const user = await User.findById(req.user.id);
-    if (user) {
-      user.studyStats.totalStudyTime += tempsEtudie;
-      user.studyStats.lastStudyDate = new Date();
-
-      if (subjectName) {
-        const masteryIndex = user.studyStats.subjectMastery.findIndex(m => m.subjectName === subjectName);
-        const scoreGain = Math.min(5, tempsEtudie / 15); // Gain de score basé sur le temps
-
-        if (masteryIndex > -1) {
-          user.studyStats.subjectMastery[masteryIndex].score = Math.min(100, user.studyStats.subjectMastery[masteryIndex].score + scoreGain);
-          user.studyStats.subjectMastery[masteryIndex].lastStudied = new Date();
-        } else {
-          user.studyStats.subjectMastery.push({
-            subjectName,
-            score: scoreGain,
-            lastStudied: new Date()
-          });
-        }
-      }
-      await user.save();
+    if (!user) {
+      return next(new AppError('Utilisateur non trouvé', 404));
     }
+
+    user.studyStats.totalStudyTime += tempsEtudie;
+    user.studyStats.lastStudyDate = new Date();
+
+    if (subjectName) {
+      const masteryIndex = user.studyStats.subjectMastery.findIndex(m => m.subjectName === subjectName);
+      const scoreGain = Math.min(5, tempsEtudie / 15);
+
+      if (masteryIndex > -1) {
+        user.studyStats.subjectMastery[masteryIndex].score = Math.min(100, user.studyStats.subjectMastery[masteryIndex].score + scoreGain);
+        user.studyStats.subjectMastery[masteryIndex].lastStudied = new Date();
+      } else {
+        user.studyStats.subjectMastery.push({
+          subjectName,
+          score: scoreGain,
+          lastStudied: new Date()
+        });
+      }
+    }
+    await user.save();
 
     res.status(201).json({
       success: true,
@@ -60,15 +63,15 @@ export const createProgress = async (req: AuthRequest, res: Response) => {
       data: progress
     });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de l'enregistrement de la progression: ${error.message}`, 400));
   }
 };
 
-export const getProgressSummary = async (req: AuthRequest, res: Response) => {
+export const getProgressSummary = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+            return next(new AppError('Utilisateur non trouvé', 404));
         }
 
         const stats = await Progress.aggregate([
@@ -90,6 +93,6 @@ export const getProgressSummary = async (req: AuthRequest, res: Response) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        next(new AppError(`Erreur lors de la récupération du résumé de progression: ${error.message}`, 500));
     }
 };

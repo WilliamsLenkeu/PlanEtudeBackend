@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Planning from '../models/Planning.model';
-import User from '../models/User.model';
 import mongoose from 'mongoose';
+import { AppError } from '../middleware/errorHandler';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -10,7 +10,7 @@ interface AuthRequest extends Request {
 // @desc    Récupérer les données pour le heatmap (6 derniers mois)
 // @route   GET /api/stats/heatmap
 // @access  Private
-export const getHeatmapData = async (req: AuthRequest, res: Response) => {
+export const getHeatmapData = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user.id;
     const sixMonthsAgo = new Date();
@@ -44,15 +44,15 @@ export const getHeatmapData = async (req: AuthRequest, res: Response) => {
       data: heatmapData
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la récupération des données heatmap: ${error.message}`, 500));
   }
 };
 
-export const getSubjectStats = async (req: AuthRequest, res: Response) => {
+export const getSubjectStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user.id;
     
-    // Agrégation pour le temps par matière avec récupération de la couleur réelle
+    // Agrégation pour le temps par matière
     const timeBySubject = await Planning.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $unwind: '$sessions' },
@@ -98,10 +98,10 @@ export const getSubjectStats = async (req: AuthRequest, res: Response) => {
       data: timeBySubject.map(s => ({
         subject: s._id,
         minutes: Math.round(s.totalMinutes),
-        color: s.subjectInfo?.color || "#FFB6C1" // Fallback rose si la matière n'existe plus
+        color: s.subjectInfo?.color || '#FFB6C1'
       }))
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la récupération des statistiques par matière: ${error.message}`, 500));
   }
 };

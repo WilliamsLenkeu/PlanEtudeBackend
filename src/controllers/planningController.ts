@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Planning from '../models/Planning.model';
 import User from '../models/User.model';
 import PDFDocument from 'pdfkit';
 import { generateHybridPlanning } from '../services/planningService';
+import { AppError } from '../middleware/errorHandler';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -11,12 +12,14 @@ interface AuthRequest extends Request {
 // @desc    Générer un planning hybride optimisé
 // @route   POST /api/planning/generate
 // @access  Private
-export const generatePlanning = async (req: AuthRequest, res: Response) => {
+export const generatePlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { periode, dateDebut } = req.body;
     const user = await User.findById(req.user.id);
     
-    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+    if (!user) {
+      return next(new AppError('Utilisateur non trouvé - Session expirée ou compte inexistant', 404));
+    }
 
     const sessions = generateHybridPlanning({
       periode,
@@ -27,24 +30,31 @@ export const generatePlanning = async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true, data: sessions });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la génération du planning: ${error.message}`, 500));
   }
 };
 
 // @desc    Mettre à jour le statut d'une session (ex: passer à 'termine')
 // @route   PATCH /api/plannings/:id/sessions/:sessionId
 // @access  Private
-export const updateSessionStatus = async (req: AuthRequest, res: Response) => {
+export const updateSessionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { id, sessionId } = req.params;
     const { statut, notes } = req.body;
 
     const planning = await Planning.findById(id);
-    if (!planning) return res.status(404).json({ success: false, message: 'Planning non trouvé' });
-    if (planning.userId.toString() !== req.user.id) return res.status(401).json({ success: false, message: 'Non autorisé' });
+    if (!planning) {
+      return next(new AppError('Planning non trouvé - L\'ID fourni est incorrect', 404));
+    }
+    
+    if (planning.userId.toString() !== req.user.id) {
+      return next(new AppError('Non autorisé - Vous ne pouvez pas modifier le planning d\'un autre utilisateur', 401));
+    }
 
     const session = (planning.sessions as any).id(sessionId);
-    if (!session) return res.status(404).json({ success: false, message: 'Session non trouvée' });
+    if (!session) {
+      return next(new AppError('Session non trouvée dans ce planning', 404));
+    }
 
     session.statut = statut || session.statut;
     if (notes) session.notes = notes;
@@ -53,11 +63,11 @@ export const updateSessionStatus = async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true, data: planning });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(new AppError(`Erreur lors de la mise à jour de la session: ${error.message}`, 500));
   }
 };
 
-export const getPlannings = async (req: AuthRequest, res: Response) => {
+export const getPlannings = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { page = 1, limit = 10, periode, sort = '-createdAt' } = req.query;
     const query: any = { userId: req.user.id };
@@ -76,6 +86,7 @@ export const getPlannings = async (req: AuthRequest, res: Response) => {
     const total = await Planning.countDocuments(query);
 
     res.json({
+      success: true,
       plannings,
       pagination: {
         total,
@@ -84,11 +95,11 @@ export const getPlannings = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    next(new AppError(`Erreur lors de la récupération des plannings: ${error.message}`, 500));
   }
 };
 
-export const createPlanning = async (req: AuthRequest, res: Response) => {
+export const createPlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const { periode, dateDebut, sessions } = req.body;
 
   try {
@@ -98,22 +109,22 @@ export const createPlanning = async (req: AuthRequest, res: Response) => {
       dateDebut,
       sessions,
     });
-    res.status(201).json(planning);
+    res.status(201).json({ success: true, data: planning });
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    next(new AppError(`Erreur lors de la création du planning: ${error.message}`, 400));
   }
 };
 
-export const updatePlanning = async (req: AuthRequest, res: Response) => {
+export const updatePlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const planning = await Planning.findById(req.params.id);
 
     if (!planning) {
-      return res.status(404).json({ message: 'Planning non trouvé' });
+      return next(new AppError('Planning non trouvé', 404));
     }
 
     if (planning.userId.toString() !== req.user.id) {
-      return res.status(401).json({ message: 'Non autorisé' });
+      return next(new AppError('Non autorisé', 401));
     }
 
     const updatedPlanning = await Planning.findByIdAndUpdate(
@@ -122,28 +133,28 @@ export const updatePlanning = async (req: AuthRequest, res: Response) => {
       { new: true }
     );
 
-    res.json(updatedPlanning);
+    res.json({ success: true, data: updatedPlanning });
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    next(new AppError(`Erreur lors de la modification du planning: ${error.message}`, 400));
   }
 };
 
-export const deletePlanning = async (req: AuthRequest, res: Response) => {
+export const deletePlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const planning = await Planning.findById(req.params.id);
 
     if (!planning) {
-      return res.status(404).json({ message: 'Planning non trouvé' });
+      return next(new AppError('Planning non trouvé', 404));
     }
 
     if (planning.userId.toString() !== req.user.id) {
-      return res.status(401).json({ message: 'Non autorisé' });
+      return next(new AppError('Non autorisé', 401));
     }
 
     await planning.deleteOne();
-    res.json({ message: 'Planning supprimé' });
+    res.json({ success: true, message: 'Planning supprimé avec succès' });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    next(new AppError(`Erreur lors de la suppression du planning: ${error.message}`, 500));
   }
 };
 

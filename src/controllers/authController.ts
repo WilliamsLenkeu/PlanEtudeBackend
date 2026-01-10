@@ -16,7 +16,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      throw new AppError('L\'utilisateur existe déjà', 400);
+      throw new AppError('L\'utilisateur existe déjà', 400, 'VALIDATION');
     }
 
     const user = await User.create({
@@ -27,6 +27,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
 
     res.status(201).json({
+      success: true,
       _id: user.id,
       name: user.name,
       email: user.email,
@@ -46,6 +47,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     if (user && (await user.comparePassword(password))) {
       res.json({
+        success: true,
         _id: user.id,
         name: user.name,
         email: user.email,
@@ -53,18 +55,18 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         refreshToken: await createRefreshToken(user.id),
       });
     } else {
-      throw new AppError('Email ou mot de passe incorrect', 401);
+      throw new AppError('Email ou mot de passe incorrect', 401, 'AUTH');
     }
   } catch (error) {
     next(error);
   }
 };
 
-export const googleLogin = async (req: Request, res: Response) => {
+export const googleLogin = async (req: Request, res: Response, next: NextFunction) => {
   const { idToken } = req.body;
 
   if (!idToken) {
-    return res.status(400).json({ message: "Token Google manquant" });
+    return next(new AppError("Token Google manquant dans la requête", 400, 'VALIDATION'));
   }
 
   try {
@@ -75,13 +77,13 @@ export const googleLogin = async (req: Request, res: Response) => {
     const payload = ticket.getPayload();
 
     if (!payload) {
-      return res.status(400).json({ message: "Token Google invalide" });
+      return next(new AppError("Échec de la vérification du token Google - Payload vide", 400, 'AUTH'));
     }
 
     const { email, name, sub, picture } = payload;
 
     if (!email) {
-      return res.status(400).json({ message: "Email non fourni par Google" });
+      return next(new AppError("L'email n'a pas pu être récupéré depuis votre compte Google", 400, 'AUTH'));
     }
 
     let user = await User.findOne({ email });
@@ -100,13 +102,13 @@ export const googleLogin = async (req: Request, res: Response) => {
         name: name || 'Utilisateur Google',
         googleId: sub,
         avatar: picture,
-        gender: 'M',
-        preferences: { themes: [], matieres: [] },
-        studyStats: { totalStudyTime: 0, subjectMastery: [] }
+        password: crypto.randomBytes(16).toString('hex'), // Mot de passe aléatoire pour les comptes Google
+        isVerified: true
       });
     }
 
     res.json({
+      success: true,
       _id: user.id,
       name: user.name,
       email: user.email,
@@ -114,10 +116,8 @@ export const googleLogin = async (req: Request, res: Response) => {
       token: generateToken(user.id),
       refreshToken: await createRefreshToken(user.id),
     });
-
   } catch (error: any) {
-    console.error("Erreur Google Auth:", error);
-    res.status(500).json({ message: "Erreur lors de l'authentification Google" });
+    next(new AppError(`Erreur lors de l'authentification Google: ${error.message}`, 500));
   }
 };
 
