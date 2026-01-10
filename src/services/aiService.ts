@@ -7,9 +7,14 @@ const client = new Mistral({
 });
 
 export const generateAIPanning = async (promptData: any) => {
+  const startTime = Date.now();
+  console.log(`\n[${new Date().toISOString()}] 🤖 APPEL API MISTRAL lancé...`);
+  console.log(`   - Période: ${promptData.periode} (${promptData.nombre})`);
+  console.log(`   - Matières: ${promptData.matieres.join(', ')}`);
+
   try {
     const response = await client.chat.complete({
-      model: 'mistral-small-latest',
+      model: 'open-mistral-7b',
       messages: [
         {
           role: 'system',
@@ -22,6 +27,7 @@ export const generateAIPanning = async (promptData: any) => {
           3. Alterne les matières pour éviter la fatigue cognitive (Interleaving).
           4. Prévois des pauses déjeuner et des buffers de fin de journée.
           5. Les dates et heures doivent être au format ISO 8601.
+          6. Tu as interdiction d'inventer des matieres , tu utilisera uniquement les matieres de l'user
           
           Format JSON attendu :
           {
@@ -41,21 +47,21 @@ export const generateAIPanning = async (promptData: any) => {
         },
         {
           role: 'user',
-          content: `Génère un planning d'étude complet avec au moins 4 sessions par jour.
-          Données utilisateur : ${JSON.stringify(promptData)}
-          
-          IMPORTANT : Tu DOIS retourner un tableau 'sessions' non vide contenant les créneaux horaires détaillés pour chaque jour de la période demandée.`
+          content: `Données : ${JSON.stringify(promptData)}
+          Génère au moins 4 sessions par jour. Réponse JSON uniquement.`
         }
       ],
       responseFormat: { type: 'json_object' }
     });
 
     const content = response.choices?.[0]?.message?.content;
+    const duration = Date.now() - startTime;
 
     if (typeof content === 'string') {
-      console.log('\n--- RÉPONSE BRUTE DE L\'IA ---');
+      console.log(`[${new Date().toISOString()}] ✅ RÉPONSE IA reçue en ${duration}ms`);
+      console.log('--- CONTENU ---');
       console.log(content);
-      console.log('--- FIN DE LA RÉPONSE ---\n');
+      console.log('--- FIN ---\n');
       
       return JSON.parse(content);
     }
