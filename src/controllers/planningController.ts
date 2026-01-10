@@ -21,16 +21,37 @@ export const generatePlanning = async (req: AuthRequest, res: Response, next: Ne
       return next(new AppError('Utilisateur non trouvé - Session expirée ou compte inexistant', 404));
     }
 
-    const { sessions, generatedBy, titre: finalTitle } = await generateHybridPlanning({
+    // 1. Créer le planning vide en base de données pour avoir un ID
+    const newPlanning = await Planning.create({
+      userId: user._id,
+      titre: titre || 'Génération en cours...',
+      periode,
+      nombre: Number(nombre),
+      dateDebut: new Date(dateDebut),
+      sessions: [],
+      generatedBy: 'AI'
+    });
+
+    // Envoyer la réponse immédiatement avec l'ID du planning
+    res.status(201).json({ 
+      success: true, 
+      message: 'Génération lancée', 
+      planningId: newPlanning._id 
+    });
+
+    // 2. Lancer la génération hybride en arrière-plan (Streaming)
+    generateHybridPlanning({
+      planningId: newPlanning._id.toString(),
       titre,
       periode,
       nombre: Number(nombre),
       dateDebut: new Date(dateDebut),
       matieres: user.preferences?.matieres || [],
       userMastery: user.studyStats?.subjectMastery || []
+    }).catch(err => {
+      console.error(`[BG-GEN] Erreur pour le planning ${newPlanning._id}:`, err);
     });
 
-    res.json({ success: true, titre: finalTitle, data: sessions, generatedBy });
   } catch (error: any) {
     next(new AppError(`Erreur lors de la génération du planning: ${error.message}`, 500));
   }

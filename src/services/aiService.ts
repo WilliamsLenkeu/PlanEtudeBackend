@@ -6,44 +6,25 @@ const client = new Mistral({
   apiKey: config.mistralApiKey,
 });
 
-export const generateAIPanning = async (promptData: any) => {
+export const generateAIPanning = async (promptData: any, onSessionGenerated?: (session: any) => void) => {
   const startTime = Date.now();
-  console.log(`\n[${new Date().toISOString()}] 🤖 APPEL API MISTRAL lancé...`);
+  console.log(`\n[${new Date().toISOString()}] 🤖 APPEL API MISTRAL (STREAMING) lancé...`);
   console.log(`   - Période: ${promptData.periode} (${promptData.nombre})`);
   console.log(`   - Matières: ${promptData.matieres.join(', ')}`);
 
   try {
-    const response = await client.chat.complete({
+    const stream = await client.chat.stream({
       model: 'open-mistral-7b',
       messages: [
         {
           role: 'system',
-          content: `Tu es PixelCoach, un expert en neurosciences et en méthodologies d'apprentissage (Spaced Repetition, Pomodoro, Active Recall).
-          Ton but est de générer un planning d'étude optimisé au format JSON strict.
+          content: `Tu es PixelCoach, un expert en neurosciences. Génère un planning d'étude JSON strict.
           
-          Règles d'organisation :
-          1. Utilise la technique Pomodoro (25/5 ou 50/10) pour les tâches de pratique.
-          2. Utilise le Deep Work (sessions de 90 min) pour l'apprentissage de nouveaux concepts.
-          3. Alterne les matières pour éviter la fatigue cognitive (Interleaving).
-          4. Prévois des pauses déjeuner et des buffers de fin de journée.
-          5. Les dates et heures doivent être au format ISO 8601.
-          6. Tu as interdiction d'inventer des matieres , tu utilisera uniquement les matieres de l'user
-          
-          Format JSON attendu :
-          {
-            "titre": "string (3 mots maximum, exemple: 'Objectif Concours Médecine')",
-            "sessions": [
-              {
-                "matiere": "string",
-                "debut": "ISOString",
-                "fin": "ISOString",
-                "type": "LEARNING | REVIEW | PRACTICE | MOCK_EXAM | BUFFER | PAUSE",
-                "method": "POMODORO | DEEP_WORK | CLASSIC",
-                "priority": "LOW | MEDIUM | HIGH",
-                "notes": "string (conseil spécifique basé sur la méthode choisie)"
-              }
-            ]
-          }`
+          RÈGLES CRITIQUES :
+          1. Utilise UNIQUEMENT les matières fournies dans "matieres". Ne crée JAMAIS de nouvelles matières.
+          2. Si "matieres" est vide, utilise "Révisions Générales".
+          3. Techniques : Pomodoro (pratique), Deep Work (90min, apprentissage).
+          4. Format : JSON strict avec un tableau "sessions".`
         },
         {
           role: 'user',
@@ -54,20 +35,65 @@ export const generateAIPanning = async (promptData: any) => {
       responseFormat: { type: 'json_object' }
     });
 
-    const content = response.choices?.[0]?.message?.content;
-    const duration = Date.now() - startTime;
+    let fullContent = '';
+    let buffer = '';
+    let sessionCount = 0;
 
-    if (typeof content === 'string') {
-      console.log(`[${new Date().toISOString()}] ✅ RÉPONSE IA reçue en ${duration}ms`);
-      console.log('--- CONTENU ---');
-      console.log(content);
-      console.log('--- FIN ---\n');
-      
-      return JSON.parse(content);
+    for await (const chunk of stream) {
+      const delta = chunk.data.choices[0].delta.content || '';
+      fullContent += delta;
+      buffer += delta;
+
+      // Tentative d'extraire une session complète du buffer
+      // On cherche des objets { ... } qui ressemblent à une session
+      // C'est une approche simplifiée, mais efficace pour du JSON structuré
+      while (true) {
+        const startIdx = buffer.indexOf('{');
+        if (startIdx === -1) break;
+
+        let braceCount = 0;
+        let endIdx = -1;
+        let inString = false;
+
+        for (let i = startIdx; i < buffer.length; i++) {
+          const char = buffer[i];
+          if (char === '"' && buffer[i - 1] !== '\\') inString = !inString;
+          if (!inString) {
+            if (char === '{') braceCount++;
+            else if (char === '}') braceCount--;
+
+            if (braceCount === 0) {
+              endIdx = i;
+              break;
+            }
+          }
+        }
+
+        if (endIdx !== -1) {
+          const potentialSessionStr = buffer.substring(startIdx, endIdx + 1);
+          try {
+            const parsed = JSON.parse(potentialSessionStr);
+            // Vérifier si c'est bien une session (possède le champ 'matiere')
+            if (parsed.matiere && onSessionGenerated) {
+              sessionCount++;
+              onSessionGenerated(parsed);
+            }
+          } catch (e) {
+            // Pas un JSON valide ou session incomplète, on attend plus de données
+          }
+          buffer = buffer.substring(endIdx + 1);
+        } else {
+          break; // Objet non terminé dans le buffer actuel
+        }
+      }
     }
-    throw new Error('Réponse vide de Mistral AI');
+
+    const duration = Date.now() - startTime;
+    console.log(`[${new Date().toISOString()}] ✅ STREAM IA terminé en ${duration}ms (${sessionCount} sessions extraites)`);
+    
+    return JSON.parse(fullContent);
   } catch (error) {
-    logger.error('Erreur Mistral AI:', error);
+    logger.error('Erreur Mistral AI Streaming:', error);
     throw error;
   }
 };

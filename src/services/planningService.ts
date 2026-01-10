@@ -1,8 +1,11 @@
 import { IUser } from '../models/User.model';
+import Planning from '../models/Planning.model';
 import { generateAIPanning } from './aiService';
 import logger from '../utils/logger';
+import { emitToPlanning } from '../utils/socket';
 
 interface PlanningOptions {
+  planningId: string;
   titre?: string;
   periode: 'jour' | 'semaine' | 'mois' | 'semestre';
   nombre: number;
@@ -12,25 +15,44 @@ interface PlanningOptions {
 }
 
 export const generateHybridPlanning = async (options: PlanningOptions) => {
-  const { titre, periode, nombre, dateDebut, matieres, userMastery } = options;
+  const { planningId, titre, periode, nombre, dateDebut, matieres, userMastery } = options;
 
   try {
-    // Tentative de génération via Mistral AI
-    const aiResponse = await generateAIPanning({
-      titre: titre || 'Générer un titre',
-      periode,
-      nombre,
-      dateDebut: dateDebut.toISOString(),
-      matieres,
-      userMastery
-    });
+    // Tentative de génération via Mistral AI avec Streaming
+    const aiResponse = await generateAIPanning(
+      {
+        titre: titre || 'Générer un titre',
+        periode,
+        nombre,
+        dateDebut: dateDebut.toISOString(),
+        matieres,
+        userMastery
+      },
+      async (session) => {
+        // Callback : Une session a été extraite du stream !
+        try {
+          // 1. Enregistrer en base de données immédiatement
+          await Planning.findByIdAndUpdate(planningId, {
+            $push: { sessions: session }
+          });
 
-    if (aiResponse && aiResponse.sessions) {
-      return {
-        titre: titre || aiResponse.titre || 'Mon Planning',
-        sessions: aiResponse.sessions,
-        generatedBy: 'AI' as const
-      };
+          // 2. Émettre via WebSocket au client
+          emitToPlanning(planningId, 'session_generated', session);
+          
+          console.log(`[STREAM] Session ajoutée au planning ${planningId} : ${session.matiere}`);
+        } catch (dbErr) {
+          console.error(`[STREAM] Erreur lors de l'enregistrement de la session :`, dbErr);
+        }
+      }
+    );
+
+    if (aiResponse) {
+      // Finalisation : Mettre à jour le titre final si l'IA en a généré un meilleur
+      const finalTitle = titre || aiResponse.titre || 'Mon Planning';
+      await Planning.findByIdAndUpdate(planningId, { titre: finalTitle });
+      
+      emitToPlanning(planningId, 'generation_completed', { titre: finalTitle });
+      return { success: true };
     }
   } catch (error) {
     logger.warn('Échec de la génération IA, repli sur l\'algorithme local', error);
@@ -126,9 +148,17 @@ export const generateHybridPlanning = async (options: PlanningOptions) => {
     });
   }
 
-  return {
-    titre: titre || 'Mon Planning',
+  // Enregistrer le résultat du fallback en base
+  await Planning.findByIdAndUpdate(planningId, {
     sessions,
-    generatedBy: 'LOCAL' as const
-  };
+    generatedBy: 'LOCAL',
+    titre: titre || 'Mon Planning'
+  });
+
+  emitToPlanning(planningId, 'generation_completed', { 
+    titre: titre || 'Mon Planning',
+    generatedBy: 'LOCAL'
+  });
+
+  return { success: true };
 };
