@@ -43,5 +43,6 @@ export const generatePlanningSchema = z.object({
     dateDebut: z.string({
       required_error: "La date de début est requise",
     }),
+    matieres: z.array(z.string()).optional(),
   }),
 });

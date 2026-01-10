@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Planning from '../models/Planning.model';
 import User from '../models/User.model';
+import Subject from '../models/Subject.model';
 import PDFDocument from 'pdfkit';
 import { generateHybridPlanning } from '../services/planningService';
 import { AppError } from '../middleware/errorHandler';
@@ -14,12 +15,28 @@ interface AuthRequest extends Request {
 // @access  Private
 export const generatePlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { titre, periode, nombre = 1, dateDebut } = req.body;
+    const { titre, periode, nombre = 1, dateDebut, matieres } = req.body;
     const user = await User.findById(req.user.id);
     
     if (!user) {
       return next(new AppError('Utilisateur non trouvé - Session expirée ou compte inexistant', 404));
     }
+
+    // Priorité aux matières envoyées dans le body (IDs), sinon celles du profil (noms)
+    let subjectsToUse: string[] = [];
+    
+    if (matieres && matieres.length > 0) {
+      // Si on reçoit des IDs, on récupère les noms correspondants
+      const resolvedSubjects = await Subject.find({
+        _id: { $in: matieres },
+        $or: [{ userId: user._id }, { userId: { $exists: false } }]
+      });
+      subjectsToUse = resolvedSubjects.map(s => s.name);
+    } else {
+      subjectsToUse = user.preferences?.matieres || [];
+    }
+
+    console.log(`[GEN-CONTROLLER] Sujets identifiés pour l'utilisateur ${user.name}:`, subjectsToUse);
 
     // 1. Créer le planning vide en base de données pour avoir un ID
     const newPlanning = await Planning.create({
@@ -46,7 +63,7 @@ export const generatePlanning = async (req: AuthRequest, res: Response, next: Ne
       periode,
       nombre: Number(nombre),
       dateDebut: new Date(dateDebut),
-      matieres: user.preferences?.matieres || [],
+      matieres: subjectsToUse,
       userMastery: user.studyStats?.subjectMastery || []
     }).catch(err => {
       console.error(`[BG-GEN] Erreur pour le planning ${newPlanning._id}:`, err);

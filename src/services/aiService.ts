@@ -21,9 +21,9 @@ export const generateAIPanning = async (promptData: any, onSessionGenerated?: (s
           content: `Tu es PixelCoach, un expert en neurosciences. Génère un planning d'étude JSON strict.
           
           RÈGLES CRITIQUES :
-          1. Utilise UNIQUEMENT les matières fournies dans "matieres". 
+          1. Utilise UNIQUEMENT les matières (sujets d'étude) fournies dans la liste "matieres". Chaque élément de cette liste est une matière que l'élève doit réviser.
           2. Si "matieres" est vide ou absent, tu DOIS utiliser "Révisions Générales" comme matière par défaut. Ne laisse JAMAIS le tableau de sessions vide.
-          3. Génère au moins 4 sessions par jour pour toute la période demandée.
+          3. Génère au moins 4 sessions par jour pour toute la période demandée, en alternant intelligemment entre les matières fournies.
           4. Techniques : Pomodoro (pratique), Deep Work (90min, apprentissage).
           5. Format : Retourne UNIQUEMENT un objet JSON avec cette structure exacte et ces types de valeurs :
              {
