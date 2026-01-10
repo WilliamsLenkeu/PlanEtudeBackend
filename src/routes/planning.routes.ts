@@ -11,11 +11,12 @@ import {
 } from '../controllers/planningController';
 import { protect } from '../middleware/authMiddleware';
 import { validate } from '../middleware/validateMiddleware';
-import { planningSchema, generatePlanningSchema } from '../schemas/planning.schema';
+import { createPlanningSchema, generatePlanningSchema } from '../schemas/planning.schema';
 
 const router = express.Router();
 
-router.use(protect); // Toutes les routes planning sont protégées
+// Routes protégées
+router.use(protect);
 
 /**
  * @swagger
@@ -80,7 +81,7 @@ router.use(protect); // Toutes les routes planning sont protégées
  */
 router.route('/')
   .get(getPlannings)
-  .post(validate(planningSchema), createPlanning);
+  .post(validate(createPlanningSchema), createPlanning);
 
 router.post('/generate', validate(generatePlanningSchema), generatePlanning);
 
@@ -125,7 +126,7 @@ router.post('/generate', validate(generatePlanningSchema), generatePlanning);
  *               message: "Planning supprimé définitivement. 🗑️"
  */
 router.route('/:id')
-  .put(validate(planningSchema.partial()), updatePlanning)
+  .put(validate(createPlanningSchema.partial()), updatePlanning)
   .delete(deletePlanning);
 
 /**

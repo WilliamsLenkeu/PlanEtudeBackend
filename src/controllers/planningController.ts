@@ -14,21 +14,23 @@ interface AuthRequest extends Request {
 // @access  Private
 export const generatePlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { periode, dateDebut } = req.body;
+    const { titre, periode, nombre = 1, dateDebut } = req.body;
     const user = await User.findById(req.user.id);
     
     if (!user) {
       return next(new AppError('Utilisateur non trouvé - Session expirée ou compte inexistant', 404));
     }
 
-    const sessions = generateHybridPlanning({
+    const { sessions, generatedBy, titre: finalTitle } = await generateHybridPlanning({
+      titre,
       periode,
+      nombre: Number(nombre),
       dateDebut: new Date(dateDebut),
       matieres: user.preferences?.matieres || [],
       userMastery: user.studyStats?.subjectMastery || []
     });
 
-    res.json({ success: true, data: sessions });
+    res.json({ success: true, titre: finalTitle, data: sessions, generatedBy });
   } catch (error: any) {
     next(new AppError(`Erreur lors de la génération du planning: ${error.message}`, 500));
   }
@@ -100,13 +102,16 @@ export const getPlannings = async (req: AuthRequest, res: Response, next: NextFu
 };
 
 export const createPlanning = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  const { periode, dateDebut, sessions } = req.body;
+  const { titre, periode, nombre = 1, dateDebut, sessions, generatedBy = 'LOCAL' } = req.body;
 
   try {
     const planning = await Planning.create({
       userId: req.user.id,
+      titre,
       periode,
+      nombre,
       dateDebut,
+      generatedBy,
       sessions,
     });
     res.status(201).json({ success: true, data: planning });

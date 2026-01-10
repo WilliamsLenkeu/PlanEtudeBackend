@@ -1,16 +1,49 @@
 import { IUser } from '../models/User.model';
+import { generateAIPanning } from './aiService';
+import logger from '../utils/logger';
 
 interface PlanningOptions {
-  periode: 'jour' | 'semaine';
+  titre?: string;
+  periode: 'jour' | 'semaine' | 'mois' | 'semestre';
+  nombre: number;
   dateDebut: Date;
   matieres: string[];
   userMastery: Array<{ subjectName: string; score: number; lastStudied: Date }>;
 }
 
-export const generateHybridPlanning = (options: PlanningOptions) => {
-  const { periode, dateDebut, matieres, userMastery } = options;
+export const generateHybridPlanning = async (options: PlanningOptions) => {
+  const { titre, periode, nombre, dateDebut, matieres, userMastery } = options;
+
+  try {
+    // Tentative de génération via Mistral AI
+    const aiResponse = await generateAIPanning({
+      titre: titre || 'Générer un titre',
+      periode,
+      nombre,
+      dateDebut: dateDebut.toISOString(),
+      matieres,
+      userMastery
+    });
+
+    if (aiResponse && aiResponse.sessions) {
+      return {
+        titre: titre || aiResponse.titre || 'Mon Planning',
+        sessions: aiResponse.sessions,
+        generatedBy: 'AI' as const
+      };
+    }
+  } catch (error) {
+    logger.warn('Échec de la génération IA, repli sur l\'algorithme local', error);
+  }
+
+  // Fallback : Algorithme local (existant)
   const sessions = [];
-  const daysToPlan = periode === 'jour' ? 1 : 7;
+  
+  let daysToPlan = 1;
+  if (periode === 'jour') daysToPlan = 1 * nombre;
+  else if (periode === 'semaine') daysToPlan = 7 * nombre;
+  else if (periode === 'mois') daysToPlan = 30 * nombre;
+  else if (periode === 'semestre') daysToPlan = 180 * nombre;
 
   // Configuration de base
   const START_HOUR = 9; // Début à 9h
@@ -111,5 +144,9 @@ export const generateHybridPlanning = (options: PlanningOptions) => {
     });
   }
 
-  return sessions;
+  return {
+    titre: titre || 'Mon Planning',
+    sessions,
+    generatedBy: 'LOCAL' as const
+  };
 };

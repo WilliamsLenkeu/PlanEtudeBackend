@@ -2,8 +2,11 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPlanning extends Document {
   userId: mongoose.Types.ObjectId;
+  titre: string;
   periode: 'jour' | 'semaine' | 'mois' | 'semestre';
+  nombre: number; // Multiplicateur pour la période (ex: 2 semaines)
   dateDebut: Date;
+  generatedBy: 'AI' | 'LOCAL';
   sessions: {
     matiere: string;
     debut: Date;
@@ -21,8 +24,11 @@ export interface IPlanning extends Document {
 
 const PlanningSchema: Schema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  titre: { type: String, required: true },
   periode: { type: String, enum: ['jour', 'semaine', 'mois', 'semestre'], required: true },
+  nombre: { type: Number, default: 1, min: 1 },
   dateDebut: { type: Date, required: true, index: true },
+  generatedBy: { type: String, enum: ['AI', 'LOCAL'], default: 'LOCAL' },
   sessions: [{
     matiere: { type: String, required: true },
     debut: { type: Date, required: true },
