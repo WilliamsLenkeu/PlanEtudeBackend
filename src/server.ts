@@ -4,6 +4,8 @@ import { connectDB } from './core/database/connection';
 import { validateEnv, config } from './core/config/appConfig';
 import { initSocket } from './utils/socket';
 
+// Petite modification pour test
+
 // Vérifier les variables d'environnement avant de démarrer
 validateEnv();
 
