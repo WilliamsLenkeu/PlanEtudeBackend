@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AdminController } from './AdminController';
-import { protect } from 'middleware/authMiddleware';
-import { requireAdmin, requireAdminOrModerator } from 'middleware/adminMiddleware';
+import { protect } from '../../../middleware/authMiddleware';
+import { requireAdmin, requireAdminOrModerator } from '../../../middleware/adminMiddleware';
 
 export function createAdminRoutes(
   adminController: AdminController
