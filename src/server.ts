@@ -1,7 +1,7 @@
 import http from 'http';
 import app from './app';
-import connectDB from './config/db';
-import { validateEnv, config } from './config/env';
+import { connectDB } from './core/database/connection';
+import { validateEnv, config } from './core/config/appConfig';
 import { initSocket } from './utils/socket';
 
 // Vérifier les variables d'environnement avant de démarrer

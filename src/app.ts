@@ -4,18 +4,18 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import authRoutes from './routes/auth.routes';
-import planningRoutes from './routes/planning.routes';
-import progressRoutes from './routes/progress.routes';
-import userRoutes from './routes/user.routes';
-import statsRoutes from './routes/stats.routes';
-import subjectRoutes from './routes/subject.routes';
-import themeRoutes from './routes/theme.routes';
-import lofiRoutes from './routes/lofi.routes';
-import adminRoutes from './routes/admin.routes';
 import { specs, swaggerCustomOptions } from './utils/swagger';
 import swaggerUi from 'swagger-ui-express';
 import { notFound, errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './core/logging/Logger';
+import { configureContainer } from './core/container/config';
+import { createAuthModule } from './modules/auth/index';
+import { createPlanningModule } from './modules/planning/index';
+import { createProgressModule } from './modules/progress/index';
+import { createSubjectModule } from './modules/subjects/index';
+import { createThemeModule } from './modules/themes/index';
+import { createLoFiModule } from './modules/lofi/index';
+import { createAdminModule } from './modules/admin/index';
 
 const app = express();
 
@@ -25,6 +25,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Configuration pour les proxies (nécessaire pour Koyeb, Heroku, etc.)
 app.set('trust proxy', 1);
+
+// Configuration du container de dépendances
+configureContainer();
 
 // Middleware
 app.use(helmet({
@@ -39,6 +42,7 @@ app.use(helmet({
 app.use(cors());
 app.use(compression());
 app.use(express.json());
+app.use(requestLogger); // Logger de requêtes
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerCustomOptions));
@@ -57,16 +61,23 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/planning', planningRoutes);
-app.use('/api/progress', progressRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/subjects', subjectRoutes);
-app.use('/api/themes', themeRoutes);
-app.use('/api/lofi', lofiRoutes);
-app.use('/api/admin', adminRoutes);
+// Routes - Nouvelle architecture modulaire
+app.use('/api/auth', createAuthModule());
+app.use('/api/planning', createPlanningModule());
+app.use('/api/progress', createProgressModule());
+app.use('/api/subjects', createSubjectModule());
+app.use('/api/themes', createThemeModule());
+app.use('/api/lofi', createLoFiModule());
+app.use('/api/admin', createAdminModule());
+
+// TODO: Implémenter les autres modules
+// app.use('/api/progress', createProgressModule());
+// app.use('/api/users', createUserModule()); // Routes utilisateur générales
+// app.use('/api/stats', createStatsModule());
+// app.use('/api/subjects', createSubjectModule());
+// app.use('/api/themes', createThemeModule());
+// app.use('/api/lofi', createLofiModule());
+// app.use('/api/admin', createAdminModule());
 
 app.get('/', (req, res) => {
   res.send('API PlanÉtude is running...');

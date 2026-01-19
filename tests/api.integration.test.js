@@ -1,0 +1,261 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const supertest_1 = __importDefault(require("supertest"));
+const app_1 = __importDefault(require("../src/app"));
+const connection_1 = require("../src/core/database/connection");
+const SKIP_INTEGRATION_TESTS = !process.env.MONGODB_URI;
+(SKIP_INTEGRATION_TESTS ? describe.skip : describe)('API Integration Tests', () => {
+    let authToken;
+    let testUserId;
+    let testSubjectId;
+    let testPlanningId;
+    beforeAll(async () => {
+        await (0, connection_1.connectDB)();
+    }, 15000);
+    afterAll(async () => {
+        await (0, connection_1.disconnectDB)();
+    }, 10000);
+    describe('Health Check', () => {
+        it('should return 200 OK', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/')
+                .expect(200);
+            expect(res.text).toBe('API PlanÉtude is running...');
+        });
+    });
+    describe('Auth Endpoints', () => {
+        const testEmail = `test-${Date.now()}@example.com`;
+        it('should register a new user', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/auth/register')
+                .send({
+                name: 'Test User',
+                email: testEmail,
+                password: 'Test1234',
+                gender: 'M'
+            })
+                .expect(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.token).toBeDefined();
+            expect(res.body.data.refreshToken).toBeDefined();
+            authToken = res.body.data.token;
+            testUserId = res.body.data._id;
+        });
+        it('should login with correct credentials', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/auth/login')
+                .send({
+                email: testEmail,
+                password: 'Test1234'
+            })
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.token).toBeDefined();
+        });
+        it('should fail login with wrong credentials', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/auth/login')
+                .send({
+                email: testEmail,
+                password: 'WrongPassword'
+            })
+                .expect(401);
+            expect(res.body.success).toBe(false);
+        });
+    });
+    describe('Subjects Endpoints', () => {
+        it('should create a new subject', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/subjects')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                name: 'Mathématiques',
+                color: '#FF6B9D'
+            })
+                .expect(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.name).toBe('Mathématiques');
+            expect(res.body.data.color).toBe('#FF6B9D');
+            testSubjectId = res.body.data.id;
+        });
+        it('should get all subjects', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/subjects')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+        it('should update a subject', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .put(`/api/subjects/${testSubjectId}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                name: 'Mathématiques Avancées'
+            })
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.name).toBe('Mathématiques Avancées');
+        });
+    });
+    describe('Planning Endpoints', () => {
+        it('should create a new planning', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/planning')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                titre: 'Semaine de révision',
+                periode: 'semaine',
+                nombre: 5,
+                dateDebut: '2024-01-15T09:00:00.000Z',
+                sessions: [
+                    {
+                        matiere: 'Mathématiques',
+                        debut: '2024-01-15T09:00:00.000Z',
+                        fin: '2024-01-15T10:30:00.000Z',
+                        type: 'Cours théorique',
+                        priority: 'HIGH'
+                    }
+                ]
+            })
+                .expect(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.titre).toBe('Semaine de révision');
+            expect(res.body.data.sessionsCount).toBe(1);
+            testPlanningId = res.body.data.id;
+        });
+        it('should get user plannings', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/planning')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+        it('should export planning as iCal', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get(`/api/planning/${testPlanningId}/export.ical`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.text).toContain('BEGIN:VCALENDAR');
+            expect(res.text).toContain('BEGIN:VEVENT');
+        });
+    });
+    describe('Progress Endpoints', () => {
+        it('should record progress', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/progress')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                date: '2024-01-15',
+                sessionsCompletees: 3,
+                tempsEtudie: 120,
+                notes: 'Bonne journée de révision'
+            })
+                .expect(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.sessionsCompletees).toBe(3);
+            expect(res.body.data.tempsEtudie).toBe(120);
+        });
+        it('should get progress summary', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/progress/summary')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.totalXP).toBeDefined();
+            expect(res.body.data.level).toBeDefined();
+            expect(res.body.data.streak).toBeDefined();
+        });
+        it('should get progress history', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/progress/history?days=7')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+    });
+    describe('Themes Endpoints', () => {
+        it('should get all themes', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/themes')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+        it('should get theme by key', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/themes/key/classic-pink')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.key).toBe('classic-pink');
+        });
+    });
+    describe('LoFi Endpoints', () => {
+        it('should get all tracks', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/lofi')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+        it('should get categories', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/lofi/categories')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+        });
+    });
+    describe('User Profile Endpoints', () => {
+        it('should get user profile', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/auth/profile')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.email).toBeDefined();
+            expect(res.body.data.name).toBeDefined();
+        });
+        it('should update user profile', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .put('/api/auth/profile')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                name: 'Updated Test User'
+            })
+                .expect(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.name).toBe('Updated Test User');
+        });
+        it('should logout', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .post('/api/auth/logout')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+            expect(res.body.success).toBe(true);
+        });
+    });
+    describe('Error Handling', () => {
+        it('should return 404 for unknown routes', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/unknown')
+                .expect(404);
+            expect(res.body.success).toBe(false);
+        });
+        it('should return 401 without auth token', async () => {
+            const res = await (0, supertest_1.default)(app_1.default)
+                .get('/api/auth/profile')
+                .expect(401);
+            expect(res.body.success).toBe(false);
+        });
+    });
+});

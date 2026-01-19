@@ -2,8 +2,6 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
-    "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -11,9 +9,10 @@
     "resolveJsonModule": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "middleware/*": ["./middleware/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["tests/**/*", "src/**/*"],
   "exclude": ["node_modules"]
 }

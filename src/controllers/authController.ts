@@ -7,6 +7,9 @@ import RefreshTokenModel from '../models/RefreshToken.model';
 import crypto from 'crypto';
 import { AppError } from '../middleware/errorHandler';
 
+// Note: Ce contrôleur est maintenu pour compatibilité temporaire.
+// La nouvelle architecture utilise le module auth dans src/modules/auth/
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {

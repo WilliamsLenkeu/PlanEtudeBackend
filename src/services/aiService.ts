@@ -1,5 +1,5 @@
 import { Mistral } from '@mistralai/mistralai';
-import { config } from '../config/env';
+import { config } from '../core/config/appConfig';
 import logger from '../utils/logger';
 
 const client = new Mistral({
