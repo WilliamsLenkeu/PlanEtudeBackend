@@ -53,8 +53,11 @@ const UserSchema: Schema = new Schema({
 
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+  // Ne pas re-hasher si déjà au format bcrypt (AuthService hash avant persistance)
+  const pwd = this.password as string;
+  if (pwd && /^\$2[aby]\$\d+\$/.test(pwd)) return next();
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password as string, salt);
+  this.password = await bcrypt.hash(pwd, salt);
   next();
 });
 
