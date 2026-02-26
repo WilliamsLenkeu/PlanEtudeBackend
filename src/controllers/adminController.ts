@@ -7,7 +7,8 @@ import User from '../models/User.model';
 import Planning from '../models/Planning.model';
 
 export const renderDashboard = (req: Request, res: Response) => {
-  res.render('admin/dashboard');
+  const token = (req.query.token as string) || (req.headers.authorization?.replace('Bearer ', ''));
+  res.render('admin/dashboard', { token: token || '' });
 };
 
 export const streamSeed = async (req: Request, res: Response) => {

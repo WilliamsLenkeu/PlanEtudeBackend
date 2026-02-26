@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanÉtude | Dashboard Admin</title>
+    <script>window.ADMIN_TOKEN = '<%= typeof token !== "undefined" ? token : "" %>';</script>
     <!-- Tailwind CSS & DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -176,7 +177,7 @@
                         <span class="font-bold text-xl">PlanÉtude Admin</span>
                     </div>
                 </li>
-                <li><a class="active" href="/api/admin"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                <li><a class="active" href="/api/admin<%= typeof token !== "undefined" && token ? "?token=" + encodeURIComponent(token) : "" %>"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
                 <li><a href="/api-docs"><i data-lucide="file-text"></i> Documentation API</a></li>
                 <div class="mt-auto">
                     <div class="divider"></div>
@@ -190,9 +191,15 @@
         // Initialiser Lucide Icons
         lucide.createIcons();
 
+        function authHeaders() {
+            const h = { 'Content-Type': 'application/json' };
+            if (window.ADMIN_TOKEN) h['Authorization'] = 'Bearer ' + window.ADMIN_TOKEN;
+            return h;
+        }
+
         async function updateStats() {
             try {
-                const response = await fetch('/api/admin/stats');
+                const response = await fetch('/api/admin/stats', { headers: authHeaders() });
                 const result = await response.json();
                 if (result.success) {
                     document.getElementById('stat-themes').innerText = result.data.stats.themes;
@@ -233,7 +240,7 @@
         async function deletePlanning(id) {
             if (!confirm('Supprimer ce planning ?')) return;
             try {
-                const response = await fetch(`/api/admin/planning/${id}`, { method: 'DELETE' });
+                const response = await fetch(`/api/admin/planning/${id}`, { method: 'DELETE', headers: authHeaders() });
                 const result = await response.json();
                 if (result.success) {
                     addLog('Planning supprimé avec succès', 'success');
@@ -273,7 +280,8 @@
             this.disabled = true;
             this.innerHTML = '<span class="loading loading-spinner"></span> Seeding...';
             
-            const eventSource = new EventSource(`/api/admin/seed-stream?themes=${themes}&subjects=${subjects}&lofi=${lofi}`);
+            const tokenParam = window.ADMIN_TOKEN ? '&token=' + encodeURIComponent(window.ADMIN_TOKEN) : '';
+            const eventSource = new EventSource(`/api/admin/seed-stream?themes=${themes}&subjects=${subjects}&lofi=${lofi}${tokenParam}`);
             
             eventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -303,7 +311,7 @@
             try {
                 const response = await fetch('/api/admin/clear', {
                     method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders(),
                     body: JSON.stringify({ type })
                 });
                 const result = await response.json();

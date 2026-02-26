@@ -8,27 +8,31 @@ interface AuthRequest extends Request {
 }
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  let token;
+  let token: string | undefined;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.originalUrl?.startsWith('/api/admin') && req.query.token && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
+
+  if (token) {
     try {
-      token = req.headers.authorization.split(' ')[1];
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-      
-      // Vérifier si l'utilisateur existe toujours
       const currentUser = await User.findById(decoded.id).select('-password');
       if (!currentUser) {
         return next(new AppError('L\'utilisateur appartenant à ce token n\'existe plus', 401, 'AUTH'));
       }
-
-      req.user = decoded;
+      req.user = {
+        ...decoded,
+        email: (currentUser as any).email,
+        role: (currentUser as any).role,
+      };
       return next();
     } catch (error) {
       return next(new AppError('Non autorisé, session expirée ou token invalide', 401, 'AUTH'));
     }
   }
 
-  if (!token) {
-    return next(new AppError('Accès refusé - Aucun jeton d\'authentification fourni', 401, 'AUTH'));
-  }
+  return next(new AppError('Accès refusé - Aucun jeton d\'authentification fourni', 401, 'AUTH'));
 };
