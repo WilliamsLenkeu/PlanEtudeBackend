@@ -50,6 +50,9 @@ export class MongoUserRepository implements IUserRepository {
     try {
       const startTime = Date.now();
       const data = user.toPersistence();
+      if (!data._id || data._id === '') {
+        delete data._id;
+      }
       const created = await this.userModel.create(data);
       Logger.database('create', 'users', Date.now() - startTime);
 
@@ -239,6 +242,9 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     try {
       const startTime = Date.now();
       const data = token.toPersistence();
+      if (!data._id || data._id === '') {
+        delete data._id;
+      }
       const created = await this.refreshTokenModel.create(data);
       Logger.database('create', 'refresh_tokens', Date.now() - startTime);
 
