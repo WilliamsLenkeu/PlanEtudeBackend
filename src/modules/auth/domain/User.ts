@@ -53,7 +53,8 @@ export class User {
     this._preferences = {
       currentTheme: preferences?.currentTheme || 'classic-pink',
       unlockedThemes: preferences?.unlockedThemes || ['classic-pink'],
-      matieres: preferences?.matieres || []
+      matieres: preferences?.matieres || [],
+      hasCompletedSetup: preferences?.hasCompletedSetup ?? false
     };
 
     this._studyStats = {
@@ -238,7 +239,8 @@ export class UserPreferences {
   constructor(
     public currentTheme: string = 'classic-pink',
     public unlockedThemes: string[] = ['classic-pink'],
-    public matieres: string[] = []
+    public matieres: string[] = [],
+    public hasCompletedSetup: boolean = false
   ) {}
 }
 

@@ -25,7 +25,8 @@ export const DateStringSchema = z.string().refine((date) => !isNaN(Date.parse(da
 export const UserPreferencesSchema = z.object({
   currentTheme: z.string().default('classic-pink'),
   unlockedThemes: z.array(z.string()).default(['classic-pink']),
-  matieres: z.array(z.string()).default([])
+  matieres: z.array(z.string()).default([]),
+  hasCompletedSetup: z.boolean().default(false)
 });
 
 export const StudyStatsSchema = z.object({

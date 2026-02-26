@@ -13,6 +13,7 @@ export interface IUser extends Document {
     currentTheme: string;
     unlockedThemes: string[];
     matieres: string[];
+    hasCompletedSetup?: boolean;
   };
   studyStats: {
     totalStudyTime: number; // en minutes
@@ -39,6 +40,7 @@ const UserSchema: Schema = new Schema({
     currentTheme: { type: String, default: 'classic-pink' },
     unlockedThemes: { type: [String], default: ['classic-pink'] },
     matieres: [String],
+    hasCompletedSetup: { type: Boolean, default: false },
   },
   studyStats: {
     totalStudyTime: { type: Number, default: 0 },
