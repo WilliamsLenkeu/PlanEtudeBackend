@@ -30,6 +30,16 @@ pnpm exec ts-node seed-data.ts
 
 > Nécessite une variable `MONGODB_URI` dans `.env`.
 
+### Frontend en développement local
+
+Pour voir les données seedées dans le frontend, configurez `planetude-frontend/.env` :
+
+```
+VITE_API_URL=http://localhost:3001/api
+```
+
+Puis redémarrez le serveur frontend (`pnpm dev`). Les thèmes, matières et pistes Lo-Fi seedées seront visibles une fois connecté.
+
 ### Prérequis Lo-Fi
 
 Le seed Lo-Fi utilise l'API Jamendo. Ajoutez dans `.env` :

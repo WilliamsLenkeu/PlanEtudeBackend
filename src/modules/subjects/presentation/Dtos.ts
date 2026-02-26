@@ -4,7 +4,7 @@ import { Subject } from '../domain/Subject';
 export class SubjectResponseDto {
   constructor(
     public id: ObjectId,
-    public userId: ObjectId,
+    public userId: ObjectId | null,
     public name: string,
     public color: string,
     public createdAt: Date,

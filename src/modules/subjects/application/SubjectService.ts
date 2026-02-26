@@ -34,8 +34,10 @@ export class SubjectService implements ISubjectRepository {
     if (!subject) {
       throw new NotFoundError('Matière');
     }
-    // Comparer les IDs en string (MongoDB ObjectId vs string JWT)
-    const subjectUserId = subject.userId != null ? String(subject.userId) : null;
+    // Matières globales (seed) : accès lecture pour tous
+    if (subject.userId == null) return subject;
+    // Matières utilisateur : vérifier que c'est bien les siennes
+    const subjectUserId = String(subject.userId);
     const requestUserId = userId != null ? String(userId) : null;
     if (subjectUserId !== requestUserId) {
       throw new AuthorizationError('Vous n\'avez pas accès à cette matière');
@@ -47,6 +49,9 @@ export class SubjectService implements ISubjectRepository {
     Logger.business('subject', 'update', { subjectId: id, userId });
 
     const subject = await this.getSubjectById(id, userId);
+    if (subject.userId == null) {
+      throw new AuthorizationError('Les matières globales ne peuvent pas être modifiées');
+    }
 
     if (updates.name) {
       subject.updateName(updates.name);
@@ -63,8 +68,11 @@ export class SubjectService implements ISubjectRepository {
   async deleteSubject(id: ObjectId, userId: ObjectId): Promise<boolean> {
     Logger.business('subject', 'delete', { subjectId: id, userId });
 
-    await this.getSubjectById(id, userId);
-    const deleted = await this.subjectRepository.delete(id);
+    const subject = await this.getSubjectById(id, userId);
+    if (subject.userId == null) {
+      throw new AuthorizationError('Les matières globales ne peuvent pas être supprimées');
+    }
+    const deleted = await this.subjectRepository.delete(subject.id);
 
     Logger.business('subject', 'deleted', { subjectId: id });
     return deleted;

@@ -12,7 +12,20 @@ export class LoFiController {
 
       const { category } = req.query;
       const tracks = await this.lofiService.getTracks(category as string);
-      const response = tracks.map(t => LoFiTrackResponseDto.fromDomain(t));
+      const response = tracks.map(t => {
+        const dto = LoFiTrackResponseDto.fromDomain(t);
+        return {
+          id: dto.id,
+          _id: dto.id,
+          title: dto.title,
+          artist: dto.artist,
+          url: dto.url,
+          audioUrl: dto.url,
+          thumbnail: dto.thumbnail,
+          category: dto.category,
+          createdAt: dto.createdAt,
+        };
+      });
 
       res.json({
         success: true,

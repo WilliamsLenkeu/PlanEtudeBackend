@@ -3,7 +3,7 @@ import { ObjectId } from '../../../shared/types';
 // Entité métier Subject (Domain Entity)
 export class Subject {
   public readonly id: ObjectId;
-  public readonly userId: ObjectId;
+  public readonly userId: ObjectId | null; // null = matière globale (seed)
   public readonly createdAt: Date;
   public updatedAt: Date;
 
@@ -12,7 +12,7 @@ export class Subject {
 
   constructor(
     id: ObjectId,
-    userId: ObjectId,
+    userId: ObjectId | null,
     name: string,
     color: string,
     options?: {

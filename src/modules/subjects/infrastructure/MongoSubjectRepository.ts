@@ -22,7 +22,17 @@ export class MongoSubjectRepository implements ISubjectRepository {
   async findByUserId(userId: ObjectId): Promise<Subject[]> {
     try {
       const startTime = Date.now();
-      const data = await this.subjectModel.find({ userId }).lean();
+      // Retourne matières globales (seed) + matières de l'utilisateur
+      const data = await this.subjectModel
+        .find({
+          $or: [
+            { userId: null },
+            { userId: { $exists: false } },
+            { userId },
+          ],
+        })
+        .sort({ name: 1 })
+        .lean();
       Logger.database('findByUserId', 'subjects', Date.now() - startTime);
       return data.map(item => Subject.fromPersistence(item));
     } catch (error) {
