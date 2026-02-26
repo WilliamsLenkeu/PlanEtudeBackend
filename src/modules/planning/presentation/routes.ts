@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { protect } from '../../../middleware/authMiddleware';
+import { validate } from '../../../middleware/validateMiddleware';
 import { PlanningController } from './PlanningController';
 import { CreatePlanningDto, UpdatePlanningDto } from '../../../core/validation/schemas';
+import { generatePlanningSchema } from '../../../schemas/planning.schema';
+import { generatePlanning } from '../../../controllers/planningController';
 
 export function createPlanningRoutes(
   planningController: PlanningController
@@ -9,6 +12,9 @@ export function createPlanningRoutes(
   const router = Router();
 
   router.use(protect);
+
+  // Génération IA (doit être avant /:id)
+  router.post('/generate', validate(generatePlanningSchema), generatePlanning);
 
   // Routes CRUD pour les plannings
   router.post('/', async (req, res, next) => {

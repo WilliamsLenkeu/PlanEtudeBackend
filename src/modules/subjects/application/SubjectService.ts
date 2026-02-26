@@ -34,7 +34,10 @@ export class SubjectService implements ISubjectRepository {
     if (!subject) {
       throw new NotFoundError('Matière');
     }
-    if (subject.userId !== userId) {
+    // Comparer les IDs en string (MongoDB ObjectId vs string JWT)
+    const subjectUserId = subject.userId != null ? String(subject.userId) : null;
+    const requestUserId = userId != null ? String(userId) : null;
+    if (subjectUserId !== requestUserId) {
       throw new AuthorizationError('Vous n\'avez pas accès à cette matière');
     }
     return subject;
