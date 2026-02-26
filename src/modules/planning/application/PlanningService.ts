@@ -89,7 +89,10 @@ export class PlanningService implements IPlanningService {
       throw new NotFoundError('Planning');
     }
 
-    if (planning.userId !== userId) {
+    // Comparer les IDs en string (MongoDB ObjectId vs string JWT)
+    const planningUserId = planning.userId != null ? String(planning.userId) : null;
+    const requestUserId = userId != null ? String(userId) : null;
+    if (planningUserId !== requestUserId) {
       throw new AuthorizationError('Vous n\'avez pas accès à ce planning');
     }
 
