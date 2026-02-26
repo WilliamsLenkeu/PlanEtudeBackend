@@ -7,8 +7,9 @@ import { MongoLoFiRepository } from './infrastructure/MongoLoFiRepository';
 
 export function createLoFiModule(): Router {
   if (!container.has('LoFiRepository')) {
-    const LoFiModel = require('../../models/LofiTrack.model');
-    container.register('LoFiRepository', () => new MongoLoFiRepository(LoFiModel));
+    const LofiTrackModule = require('../../models/LofiTrack.model');
+    const LofiTrackModel = LofiTrackModule.default ?? LofiTrackModule;
+    container.register('LoFiRepository', () => new MongoLoFiRepository(LofiTrackModel));
   }
 
   if (!container.has(TOKENS.LOFI_SERVICE)) {

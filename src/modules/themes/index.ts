@@ -7,7 +7,8 @@ import { MongoThemeRepository } from './infrastructure/MongoThemeRepository';
 
 export function createThemeModule(): Router {
   if (!container.has('ThemeRepository')) {
-    const ThemeModel = require('../../models/Theme.model');
+    const ThemeModule = require('../../models/Theme.model');
+    const ThemeModel = ThemeModule.default ?? ThemeModule;
     container.register('ThemeRepository', () => new MongoThemeRepository(ThemeModel));
   }
 
