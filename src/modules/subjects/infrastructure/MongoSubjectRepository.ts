@@ -35,6 +35,9 @@ export class MongoSubjectRepository implements ISubjectRepository {
     try {
       const startTime = Date.now();
       const data = subject.toPersistence();
+      if (!data._id || data._id === '') {
+        delete data._id;
+      }
       const created = await this.subjectModel.create(data);
       Logger.database('create', 'subjects', Date.now() - startTime);
       return Subject.fromPersistence(created);

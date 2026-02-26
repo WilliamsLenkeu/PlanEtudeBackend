@@ -6,6 +6,7 @@ import UserModel from '../../models/User.model';
 import RefreshTokenModel from '../../models/RefreshToken.model';
 import PlanningModel from '../../models/Planning.model';
 import ProgressModel from '../../models/Progress.model';
+import SubjectModel from '../../models/Subject.model';
 
 // Import des repositories
 import { MongoUserRepository, MongoRefreshTokenRepository } from '../../modules/auth';
@@ -22,6 +23,10 @@ import { MongoPlanningRepository } from '../../modules/planning/infrastructure/M
 import { ProgressService } from '../../modules/progress/application/ProgressService';
 import { MongoProgressRepository } from '../../modules/progress/infrastructure/MongoProgressRepository';
 
+// Import des services Subject
+import { SubjectService } from '../../modules/subjects/application/SubjectService';
+import { MongoSubjectRepository } from '../../modules/subjects/infrastructure/MongoSubjectRepository';
+
 // Configuration du container
 export function configureContainer(): void {
   // Repositories
@@ -29,6 +34,7 @@ export function configureContainer(): void {
   container.register(TOKENS.REFRESH_TOKEN_REPOSITORY, () => new MongoRefreshTokenRepository(RefreshTokenModel));
   container.register(TOKENS.PLANNING_REPOSITORY, () => new MongoPlanningRepository(PlanningModel));
   container.register(TOKENS.PROGRESS_REPOSITORY, () => new MongoProgressRepository(ProgressModel));
+  container.register(TOKENS.SUBJECT_REPOSITORY, () => new MongoSubjectRepository(SubjectModel));
 
   // Services utilitaires
   container.register(TOKENS.PASSWORD_HASHER, () => new BcryptPasswordService());
@@ -56,5 +62,10 @@ export function configureContainer(): void {
   // Services métier Progress
   container.register(TOKENS.PROGRESS_SERVICE, () => new ProgressService(
     container.resolve(TOKENS.PROGRESS_REPOSITORY)
+  ));
+
+  // Services métier Subject
+  container.register(TOKENS.SUBJECT_SERVICE, () => new SubjectService(
+    container.resolve(TOKENS.SUBJECT_REPOSITORY)
   ));
 }
