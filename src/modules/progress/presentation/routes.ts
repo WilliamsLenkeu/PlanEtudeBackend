@@ -1,10 +1,13 @@
 import { Router } from 'express';
+import { protect } from '../../../middleware/authMiddleware';
 import { ProgressController } from './ProgressController';
 
 export function createProgressRoutes(
   progressController: ProgressController
 ): Router {
   const router = Router();
+
+  router.use(protect);
 
   router.post('/', progressController.recordProgress);
   router.get('/', progressController.getUserProgress);

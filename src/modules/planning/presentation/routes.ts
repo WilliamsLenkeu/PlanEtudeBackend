@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { protect } from '../../../middleware/authMiddleware';
 import { PlanningController } from './PlanningController';
 import { CreatePlanningDto, UpdatePlanningDto } from '../../../core/validation/schemas';
 
@@ -6,6 +7,8 @@ export function createPlanningRoutes(
   planningController: PlanningController
 ): Router {
   const router = Router();
+
+  router.use(protect);
 
   // Routes CRUD pour les plannings
   router.post('/', async (req, res, next) => {

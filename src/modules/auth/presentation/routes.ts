@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { protect } from '../../../middleware/authMiddleware';
 import { AuthController } from './AuthController';
 import { UserController } from './UserController';
 import { RegisterUserDto as RegisterUserSchema, LoginUserDto as LoginUserSchema, UpdateProfileDto as UpdateProfileSchema } from '../../../core/validation/schemas';
@@ -36,9 +37,9 @@ export function createAuthRoutes(
   router.post('/logout', authController.logout);
 
   // Routes utilisateur (protégées)
-  router.get('/profile', userController.getProfile);
+  router.get('/profile', protect, userController.getProfile);
 
-  router.put('/profile', async (req, res, next) => {
+  router.put('/profile', protect, async (req, res, next) => {
     try {
       const validatedData = UpdateProfileSchema.parse(req.body);
       req.body = validatedData;
@@ -48,13 +49,13 @@ export function createAuthRoutes(
     }
   });
 
-  router.get('/stats', userController.getUserStats);
-  router.post('/unlock-theme', userController.unlockTheme);
-  router.post('/add-subject', userController.addSubject);
-  router.post('/remove-subject', userController.removeSubject);
+  router.get('/stats', protect, userController.getUserStats);
+  router.post('/unlock-theme', protect, userController.unlockTheme);
+  router.post('/add-subject', protect, userController.addSubject);
+  router.post('/remove-subject', protect, userController.removeSubject);
 
   // Routes admin (protégées et nécessitant le rôle admin)
-  router.get('/users', userController.getUsers);
+  router.get('/users', protect, userController.getUsers);
 
   return router;
 }
